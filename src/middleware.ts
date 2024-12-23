@@ -1,0 +1,25 @@
+import { NextRequest, NextResponse } from "next/server";
+
+export function middleware(req: NextRequest){
+    const token = req.cookies.get("authToken");
+    const isAuth = !!token;
+
+    const { pathname, search } = req.nextUrl;
+
+    // If user is not authenticated and tries to access protected routes
+    if (!isAuth && pathname !== "/login") {
+        const loginUrl = new URL("/login", req.url);
+
+        // Append the current path (with query string) as a redirect URL
+        loginUrl.searchParams.set("redirect", pathname + search);
+    
+        return NextResponse.redirect(loginUrl);
+    }
+
+    // Allow access
+    return NextResponse.next();
+}
+
+export const config = {
+    matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"], // Protect all pages except login and public assets
+  };
