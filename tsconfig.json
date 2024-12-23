@@ -18,6 +18,10 @@
         "name": "next"
       }
     ],
+
+    
+    "forceConsistentCasingInFileNames": true,
+    
     "paths": {
       "@/*": ["./src/*"]
     }
