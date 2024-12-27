@@ -13,19 +13,33 @@ const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
+  // useEffect(() => {
+  //   const token = localStorage.getItem("authToken");
+  //   setIsAuthenticated(!!token);
+  // }, []);
+
   useEffect(() => {
-    const token = localStorage.getItem("authToken");
+    // Function to get a cookie value by name
+
+    const getCookie = (name) => {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop()?.split(";").shift();
+      return null;
+    };
+
+    // Check if the cookie exists and is valid
+    const token = getCookie("authToken");
     setIsAuthenticated(!!token);
   }, []);
 
-  const login = (token: string) => {
+  const login = () => {
     setIsAuthenticated(true);
-    localStorage.setItem("authToken", token);
   };
 
   const logout = () => {
+    document.cookie = `authToken=; path=/; max-age=0`;
     setIsAuthenticated(false);
-    localStorage.removeItem("authToken");
   };
 
   return (

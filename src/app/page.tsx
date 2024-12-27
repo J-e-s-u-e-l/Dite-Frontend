@@ -1,26 +1,24 @@
 "use client";
 
-import Link from "next/link";
 import { useAuth } from "../context/authContext";
-import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Spinner from "../components/common/Spinner";
+
+import Link from "next/link";
 
 export default function Home() {
-  const { isAuthenticated } = useAuth();
+  const { logout } = useAuth();
   const router = useRouter();
+  // const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (!isAuthenticated) {
-      router.push("/login"); // Redirect to login if not authenticated
-    }
-  }, [isAuthenticated, router]);
-
-  if (!isAuthenticated) {
-    return null; // Optionally display a loader while redirecting
-  }
+  const handleLogout = () => {
+    logout();
+    router.push("/login");
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center">
+      {/* {loading && <Spinner />} */}
       <h1 className="text-4xl font-bold text-blue-600">Welcome to CWSS</h1>
       <nav className="mt-4">
         <ul className="flex flex-col space-y-2">
@@ -47,6 +45,13 @@ export default function Home() {
           </li>
         </ul>
       </nav>
+
+      <button
+        onClick={handleLogout}
+        className="mt-4 py-2 px-4 bg-red-500 text-white rounded"
+      >
+        Logout
+      </button>
     </div>
   );
 }

@@ -5,9 +5,11 @@ export function middleware(req: NextRequest){
     const isAuth = !!token;
 
     const { pathname, search } = req.nextUrl;
+    
+    const publicPages = ["/login", "/register", "/verify-otp", "/emailVerification", "/passwordReset"];
 
     // If user is not authenticated and tries to access protected routes
-    if (!isAuth && pathname !== "/login") {
+    if (!isAuth && !publicPages.includes(pathname)) {
         const loginUrl = new URL("/login", req.url);
 
         // Append the current path (with query string) as a redirect URL

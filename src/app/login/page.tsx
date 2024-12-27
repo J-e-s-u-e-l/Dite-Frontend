@@ -1,25 +1,25 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useAuth } from "../../context/authContext";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
+
+import { useModal } from "@/context/ModalContext";
+import Spinner from "@/components/common/Spinner";
 
 export default function Login() {
+  const { showModal } = useModal();
+
   const { login } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get("redirect") || "/";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [redirectUrl, setRedirectUrl] = useState<string | null>(null);
-
-  useEffect(() => {
-    // Retrieve the "redirect" query parameter from the URL search params
-    const urlParams = new URLSearchParams(window.location.search);
-    const redirect = urlParams.get("redirect");
-    setRedirectUrl(redirect || "/"); // Default to "/" if no redirect URL is found
-  }, []);
 
   // Handling form submission
   const handleLogin = async (e: React.FormEvent) => {
@@ -28,26 +28,55 @@ export default function Login() {
     setError(null);
 
     try {
-      const response = await fetch("https://localhost:7185/api/Auth/sign-in", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/Auth/sign-in`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email, password }),
+        }
+      );
 
       const data = await response.json();
 
       if (data.status) {
-        localStorage.setItem("authToken", data.data.token);
+        const isProduction = process.env.NODE_ENV === "production";
+
+        const cookieOptions = {
+          path: "/",
+          sameSite: "Strict",
+        };
+
+        // Apply Secure and HttpOnly flags only in production
+        if (isProduction) {
+          cookieOptions.httpOnly = true;
+          cookieOptions.secure = true;
+        } else {
+          cookieOptions.httpOnly = false;
+          cookieOptions.secure = false;
+        }
+
+        document.cookie = `authToken=${data.data.token}; path=${
+          cookieOptions.path
+        }; SameSite=${cookieOptions.sameSite}; ${
+          cookieOptions.secure ? "Secure;" : ""
+        }${cookieOptions.httpOnly ? "HttpOnly;" : ""}`;
 
         // Call login from context
         login(data.data.token);
 
-        console.log(response);
-        router.push(redirectUrl || "/");
+        // Redirect the user
+        router.push(redirectTo ?? "/");
+      } else if (
+        data.message ===
+        "Your email has not been verified. Please proceed to verify your email."
+      ) {
+        localStorage.setItem("userEmail", email);
+        router.push("/verify-email");
       } else {
-        setError(data.message);
+        showModal(data.message, "error");
       }
     } catch (error) {
       setError("Something went wrong. Please try again. ");
@@ -58,6 +87,7 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center">
+      {loading && <Spinner />}
       <h1 className="text-4xl font-bold text-blue-600">Login Page</h1>
       <form
         onSubmit={handleLogin}
@@ -89,6 +119,16 @@ export default function Login() {
             className="w-full p-2 border border-gray-300 rounded text-black"
             required
           />
+        </div>
+
+        <div className="flex justify-between flex-wrap gap-4">
+          <Link href="/register" className="text-blue-300">
+            Create account
+          </Link>
+
+          <Link href="/reset-password" className="text-red-300">
+            Forgot password
+          </Link>
         </div>
 
         {error && <p className="text-red-500 text-sm">{error}</p>}
