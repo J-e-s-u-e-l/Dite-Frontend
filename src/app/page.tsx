@@ -2,7 +2,7 @@
 
 import { useAuth } from "../context/authContext";
 import { useRouter } from "next/navigation";
-import Spinner from "../components/common/Spinner";
+import Loader from "../components/common/Loader";
 
 import Link from "next/link";
 

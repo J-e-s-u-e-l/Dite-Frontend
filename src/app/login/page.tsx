@@ -5,11 +5,11 @@ import { useAuth } from "../../context/authContext";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
-import { useModal } from "@/context/ModalContext";
-import Spinner from "@/components/common/Spinner";
+import { useToast } from "@/context/ToastContext";
+import Loader from "@/components/common/Loader";
 
 export default function Login() {
-  const { showModal } = useModal();
+  const { showToast: showToast } = useToast();
 
   const { login } = useAuth();
   const router = useRouter();
@@ -21,7 +21,29 @@ export default function Login() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Handling form submission
+  const handleEmailNotVerified = (email: string) => {
+    localStorage.setItem("userEmail", email);
+
+    showToast(
+      "Your email is not verified. Redirecting to the verification page in 3 seconds...",
+      "warning"
+    );
+
+    let countdown = 3;
+    const interval = setInterval(() => {
+      countdown--;
+      showToast(
+        `Redirecting to the verification page in ${countdown} seconds...`,
+        "info"
+      );
+
+      if (countdown <= 0) {
+        clearInterval(interval);
+        router.push("/verify-email");
+      }
+    }, 1000);
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -73,13 +95,13 @@ export default function Login() {
         data.message ===
         "Your email has not been verified. Please proceed to verify your email."
       ) {
-        localStorage.setItem("userEmail", email);
-        router.push("/verify-email");
+        handleEmailNotVerified(email);
       } else {
-        showModal(data.message, "error");
+        showToast(data.message, "error");
       }
     } catch (error) {
-      setError("Something went wrong. Please try again. ");
+      console.log("Something went wrong. Please try again. ", error);
+      setError("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -87,7 +109,7 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center">
-      {loading && <Spinner />}
+      {loading && <Loader />}
       <h1 className="text-4xl font-bold text-blue-600">Login Page</h1>
       <form
         onSubmit={handleLogin}

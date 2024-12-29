@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import Spinner from "@/components/common/Spinner";
+import Loader from "@/components/common/Loader";
 
 export default function NavigationLoader({
   children,
@@ -24,7 +24,7 @@ export default function NavigationLoader({
 
   return (
     <>
-      {loading && <Spinner />}
+      {loading && <Loader />}
       {children}
     </>
   );

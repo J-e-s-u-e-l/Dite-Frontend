@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { AiOutlineClose } from "react-icons/ai";
 
-type ModalType = "info" | "warning" | "success" | "error";
+type ToastType = "info" | "warning" | "success" | "error";
 
-type ModalProps = {
+type ToastProps = {
   isOpen: boolean;
   message: string;
   onClose: () => void;
-  type?: ModalType;
+  type?: ToastType;
 };
 
-const Modal: React.FC<ModalProps> = ({
+const Toast: React.FC<ToastProps> = ({
   isOpen,
   message,
   onClose,
@@ -87,4 +87,4 @@ const Modal: React.FC<ModalProps> = ({
   );
 };
 
-export default Modal;
+export default Toast;
