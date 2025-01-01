@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/context/ToastContext";
 
 interface VerificationComponentProps {
   purpose: "emailVerification" | "passwordReset";
@@ -12,6 +13,9 @@ const VerificationComponent: React.FC<VerificationComponentProps> = ({
 }) => {
   const router = useRouter();
 
+  const { showToast: showToast } = useToast();
+  const { hideToast: hideToast } = useToast();
+
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -20,7 +24,7 @@ const VerificationComponent: React.FC<VerificationComponentProps> = ({
     purpose === "emailVerification"
       ? "Verify Your Email"
       : "Reset Your Password";
-  const payloadPurpose = purpose === "emailVerification" ? "1" : "2";
+  const payloadPurpose = purpose === "emailVerification" ? 1 : 2;
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault(); // Prevent the default form submission
@@ -31,7 +35,7 @@ const VerificationComponent: React.FC<VerificationComponentProps> = ({
     }
 
     const payload = {
-      recipientType: "1",
+      recipientType: 1,
       recipient: email,
       purpose: payloadPurpose,
     };
@@ -52,13 +56,15 @@ const VerificationComponent: React.FC<VerificationComponentProps> = ({
 
       if (data.status) {
         localStorage.setItem("userEmail", email);
-        alert(data.message);
+        // alert(data.message);
+        showToast(data.message, "success");
         router.push(`/verify-otp?purpose=${payloadPurpose}`);
       } else {
         setError(data.message);
       }
     } catch (error) {
       setError("Something went wrong. Please try again.");
+      console.error("Something went wrong. Please try again." + { error });
     } finally {
       setIsLoading(false);
     }

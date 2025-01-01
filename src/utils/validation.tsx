@@ -15,17 +15,46 @@ export const validateUsername = async (username: string) => {
         body: JSON.stringify({ username }),
       }
     );
+
+    // Handle non-OK responses
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Server responded with an error:", errorData);
+      return "Unable to check username availability at the moment. Please try again later.";
+    }
+
+    // Parse response
     const available = await response.json();
     return available.status
       ? "Username is unavailable."
       : "Username is available";
   } catch (error) {
-    console.error(
-      error,
-      "An error occurred while checking username availability."
-    );
-    return "An error occurred while checking username availability.";
+    console.error("Network or server error:", error);
+    return "A network error occurred. Please check your connection and try again.";
   }
+
+  // try {
+  //   const response = await fetch(
+  //     `${process.env.NEXT_PUBLIC_API_URL}/Registration/uniqueUsername`,
+  //     {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify({ username }),
+  //     }
+  //   );
+  //   const available = await response.json();
+  //   return available.status
+  //     ? "Username is unavailable."
+  //     : "Username is available";
+  // } catch (error) {
+  //   console.error(
+  //     error,
+  //     "An error occurred while checking username availability."
+  //   );
+  //   return "An error occurred while checking username availability.";
+  // }
 };
 
 export const validatePassword = (password: string) => {
@@ -42,7 +71,9 @@ export const validateConfirmPassword = (
   password: string,
   confirmPassword: string
 ): string | null => {
-  return password === confirmPassword ? null : "Passwords do not match.";
+  return password === confirmPassword
+    ? "Passwords match!"
+    : "Passwords do not match.";
 };
 
 export const validateUniqueEmail = async (email: string) => {

@@ -5,7 +5,7 @@ interface AuthPageProps {
 }
 
 const AuthPage: React.FC<AuthPageProps> = async ({ params }) => {
-  const { purpose } = params;
+  const { purpose } = await params;
 
   // Validate `purpose`
   if (purpose !== "emailVerification" && purpose !== "passwordReset") {

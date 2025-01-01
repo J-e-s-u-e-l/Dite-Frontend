@@ -1,5 +1,6 @@
 import React from "react";
 import Spinner from "@/components/common/Spinner";
+import { useState } from "react";
 
 type FormFieldProps = {
   label: string;
@@ -7,11 +8,15 @@ type FormFieldProps = {
   type: string;
   value: string;
   onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  // onBlur: (event: React.FocusEvent<HTMLInputElement>) => void;
+  onBlur: (event: React.FocusEvent<HTMLInputElement>) => void;
+  // onChange: (e) => void;
+  // onFocus?: () => void;
+  // onFocus?: (event: React.ChangeEvent<HTMLInputElement>) => void;
   message: string | null | undefined;
-  messageType?: "error" | "success";
+  messageType?: "error" | "success" | "non";
   isChecking?: boolean;
   additionalContent?: React.ReactNode;
+  isPasswordField?: boolean;
 };
 
 const FormField = ({
@@ -20,13 +25,20 @@ const FormField = ({
   type,
   value,
   onChange,
-  // onBlur,
+  onBlur,
   message,
   messageType,
   isChecking = false,
   additionalContent = null,
+  isPasswordField = false,
 }: FormFieldProps) => {
+  const [showPassword, setShowPassword] = useState(false);
+  // const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   // const [touched, setTouched] = useState(false);
+
+  const togglePasswordVisibility = () => {
+    setShowPassword((prev) => !prev);
+  };
 
   return (
     <div className="mb-4">
@@ -37,13 +49,10 @@ const FormField = ({
       <div className="relative">
         <input
           name={label.toLowerCase()}
-          type={type}
+          type={isPasswordField && showPassword ? "text" : type}
           value={value}
           onChange={onChange}
-          // onBlur={(e) => {
-          //   setTouched(true);
-          //   onBlur(e);
-          // }}
+          onBlur={onBlur}
           placeholder={placeholder}
           className={`w-full p-2 border ${
             messageType === "error"
@@ -56,6 +65,15 @@ const FormField = ({
           //   message ? "border-red-500" : "border-gray-300"
           // } rounded`}
         />
+        {label === "Password" || label === "Confirm Password" ? (
+          <button
+            type="button"
+            onClick={togglePasswordVisibility}
+            className="absolute right-2 top-2"
+          >
+            {showPassword ? "Hide" : "Show"}
+          </button>
+        ) : null}
         {isChecking && <Spinner className="absolute right-2 top-2" size="sm" />}
       </div>
       {message && (

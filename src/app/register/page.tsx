@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useToast } from "@/context/ToastContext";
 import FormField from "../../components/common/FormField";
 import { debounce } from "../../utils/debounce";
+import Link from "next/link";
 
 import {
   validateUsername,
@@ -23,8 +24,9 @@ const Register = () => {
     email: "",
     username: "",
     password: "",
-    confirmPassword: "",
   });
+
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   const [passwordRules, setPasswordRules] = useState({
     minLength: false,
@@ -33,6 +35,15 @@ const Register = () => {
     hasNumber: false,
     hasSpecialChar: false,
   });
+
+  const [touchedFields, setTouchedFields] = useState<Record<string, boolean>>({
+    email: false,
+    username: false,
+    password: false,
+    "confirm password": false,
+  });
+
+  const [showTooltip, setShowTooltip] = useState(false);
 
   type ErrorsType = {
     [key: string]: string | null;
@@ -85,13 +96,43 @@ const Register = () => {
     []
   );
 
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const { name } = e.target;
+
+    setTouchedFields((prev) => ({ ...prev, [name]: true }));
+
+    // Show "required" message only if the field is empty and hasn't been modified
+    if (!formData[name]) {
+      setMessages((prev) => ({
+        ...prev,
+        [name]: `${name.charAt(0).toUpperCase() + name.slice(1)} is required`,
+      }));
+    }
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+
+    // Update form data
     setFormData((prev) => ({ ...prev, [name]: value }));
 
+    setTouchedFields((prev) => ({ ...prev, [name]: true }));
+
+    // Real-time validation logic
     if (name === "password") {
       const rules = validatePassword(value);
       setPasswordRules(rules);
+
+      setMessages((prev) => ({
+        ...prev,
+        password: value
+          ? Object.values(rules).every(Boolean)
+            ? "Looks great!"
+            : "Password is not strong enough"
+          : touchedFields.password
+          ? "Password is required"
+          : "",
+      }));
     }
 
     if (name === "email") {
@@ -102,35 +143,87 @@ const Register = () => {
       debouncedValidateUsername(value);
     }
 
-    // if (name === "confirmPassword") {
-    //   const confirmPasswordError = validateConfirmPassword(
-    //     formData.password,
-    //     value
-    //   );
-    //   setMessages((prev) => ({
-    //     ...prev,
-    //     confirmPassword: confirmPasswordError,
-    //   }));
-    // }
+    if (name === "confirm password") {
+      setConfirmPassword(value);
+      const confirmPasswordError = validateConfirmPassword(
+        formData.password,
+        value
+      );
+      setMessages((prev) => ({
+        ...prev,
+        confirmPassword: confirmPasswordError || "",
+      }));
+    }
   };
 
   useEffect(() => {
-    const confirmPasswordError = validateConfirmPassword(
-      formData.password,
-      formData.confirmPassword
-    );
-    setMessages((prev) => ({
-      ...prev,
-      confirmPassword: confirmPasswordError,
-    }));
-  }, [formData.password, formData.confirmPassword]);
+    if (confirmPassword) {
+      const confirmPasswordError = validateConfirmPassword(
+        formData.password,
+        confirmPassword
+      );
+
+      setMessages((prev) => ({
+        ...prev,
+        confirmPassword: confirmPasswordError || "",
+      }));
+    } else {
+      setMessages((prev) => ({
+        ...prev,
+        confirmPassword: "",
+      }));
+    }
+  }, [formData.password, confirmPassword]);
 
   useEffect(() => {
-    setIsFormValid(
-      Object.values(message ?? {}).every((error) => error === "") &&
-        Object.values(formData).every((value) => value.trim() !== "")
-    );
-  }, [message, formData]);
+    const areAllFieldsValid = () => {
+      // Check email validity
+      const isEmailValid =
+        formData.email.trim() !== "" &&
+        touchedFields.email &&
+        message?.email?.includes("is available");
+
+      // Check username validity
+      const isUsernameValid =
+        formData.username.trim() !== "" &&
+        touchedFields.username &&
+        message?.username?.includes("is available");
+
+      // Check password validity
+      const isPasswordValid =
+        formData.password.trim() !== "" &&
+        touchedFields.password &&
+        Object.values(passwordRules).every(Boolean);
+
+      // Check confirm password validity
+      const isConfirmPasswordValid =
+        confirmPassword.trim() !== "" &&
+        touchedFields["confirm password"] &&
+        message?.confirmPassword?.includes("Passwords match");
+
+      return (
+        isEmailValid &&
+        isUsernameValid &&
+        isPasswordValid &&
+        isConfirmPasswordValid
+      );
+    };
+
+    const noErrorMessages = () => {
+      if (!message) return false;
+
+      return Object.values(message).every(
+        (msg) =>
+          !msg || // No message (empty string or null)
+          msg.includes("is available") || // Success messages
+          msg.includes("Passwords match") || // Valid match confirmation
+          msg.includes("Looks great!") // Valid match confirmation
+      );
+    };
+
+    // Update form validity
+    setIsFormValid(areAllFieldsValid() && noErrorMessages());
+  }, [formData, confirmPassword, touchedFields, message, passwordRules]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -148,13 +241,29 @@ const Register = () => {
         }
       );
 
+      // const data = await response.json();
+
+      // if (data.status) {
+      //   showToast(data.message, "info");
+      //   setTimeout(() => {
+      //     router.push("/emailVerification");
+      //   }, 5000);
+      // }
+      // if (!data.status) {
+      //   showToast(data.message, "error");
+      // }
       const data = await response.json();
 
       if (data.status) {
-        showToast("You have successfully created an account.", "info");
+        localStorage.setItem("userEmail", formData.email);
+
+        showToast(data.message, "info");
         setTimeout(() => {
-          router.push("/login");
-        }, 2000);
+          router.push("/verify-otp");
+        }, 5000);
+      }
+      if (!data.status) {
+        showToast(data.message, "error");
       }
     } catch (error) {
       console.log("Something went wrong. Please try again.", error);
@@ -168,117 +277,209 @@ const Register = () => {
       {loading && <Loader />}
       <h1 className="text-2xl font-bold mb-6">Register</h1>
 
-      <FormField
-        label="Email"
-        type="email"
-        placeholder="example@example.com"
-        value={formData.email}
-        onChange={handleChange}
-        // onBlur={validateForm}
-        message={message?.email}
-        messageType={
-          message?.email?.includes("available") ? "success" : "error"
-        }
-        isChecking={isCheckingEmail}
-      />
+      <div>
+        <FormField
+          label="Email"
+          type="email"
+          placeholder="name@domain.com"
+          value={formData.email}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          message={touchedFields.email ? message?.email : null}
+          messageType={
+            touchedFields?.email && message?.email?.includes("is available")
+              ? "success"
+              : message?.email
+              ? "error"
+              : "non"
+          }
+          isChecking={isCheckingEmail}
+        />
+      </div>
 
-      <FormField
-        label="Username"
-        type="text"
-        placeholder="your_username"
-        value={formData.username}
-        onChange={handleChange}
-        // onBlur={validateForm}
-        message={message?.username}
-        messageType={
-          message?.username?.includes("available") ? "success" : "error"
-        }
-        isChecking={isCheckingUsername}
-      />
+      <div>
+        <FormField
+          label="Username"
+          type="text"
+          placeholder="your_username123"
+          value={formData.username}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          message={touchedFields.username ? message?.username : null}
+          messageType={
+            touchedFields.username &&
+            message?.username?.includes("is available")
+              ? "success"
+              : touchedFields.username &&
+                message?.username?.includes(
+                  "Username must be at least 3 characters."
+                )
+              ? "error"
+              : touchedFields.username &&
+                message?.username?.includes(
+                  "Username must not exceed 20 characters."
+                )
+              ? "error"
+              : touchedFields.username &&
+                message?.username?.includes("Username is unavailable.")
+              ? "error"
+              : touchedFields.username &&
+                message?.username?.includes("Username is required")
+              ? "error"
+              : touchedFields.username &&
+                message?.username?.includes(
+                  "An error occurred while checking username availability."
+                )
+              ? "error"
+              : "non"
+          }
+          isChecking={isCheckingUsername}
+        />
+      </div>
 
-      <FormField
-        label="Password"
-        type="password"
-        placeholder="Enter your password"
-        value={formData.password}
-        onChange={handleChange}
-        // onBlur={validateForm}
-        // message={message?.password}
-        message={
-          Object.values(passwordRules).every(Boolean)
-            ? "Looks great!"
-            : "Not strong enough"
-        }
-        messageType={
-          Object.values(passwordRules).every(Boolean) ? "success" : "error"
-        }
-        additionalContent={
-          <div className="mt-2">
-            <p
-              className={
-                passwordRules.minLength ? "text-green-500" : "text-red-500"
-              }
-            >
-              {passwordRules.minLength
-                ? "✔ characters minimum"
-                : `✘ Minimum of 8 characters (${
-                    8 - formData.password.length
-                  } left)`}
-            </p>
-            <p
-              className={
-                passwordRules.hasUpperCase ? "text-green-500" : "text-red-500"
-              }
-            >
-              {passwordRules.hasUpperCase ? "✔" : "✘"} 1 uppercase letter
-            </p>
-            <p
-              className={
-                passwordRules.hasLowerCase ? "text-green-500" : "text-red-500"
-              }
-            >
-              {passwordRules.hasLowerCase ? "✔" : "✘"} 1 lowercase letter
-            </p>
-            <p
-              className={
-                passwordRules.hasNumber ? "text-green-500" : "text-red-500"
-              }
-            >
-              {passwordRules.hasNumber ? "✔" : "✘"} 1 number
-            </p>
-            <p
-              className={
-                passwordRules.hasSpecialChar ? "text-green-500" : "text-red-500"
-              }
-            >
-              {passwordRules.hasSpecialChar ? "✔" : "✘"} 1 special character
-            </p>
-          </div>
-        }
-      />
+      <div className="relative">
+        <FormField
+          label="Password"
+          type={"password"}
+          placeholder="Enter your password"
+          value={formData.password}
+          onChange={handleChange}
+          isPasswordField={true}
+          onBlur={handleBlur}
+          message={
+            formData.password
+              ? touchedFields.password
+                ? Object.values(passwordRules).every(Boolean)
+                  ? "Looks great!"
+                  : "Password is not strong enough"
+                : ""
+              : touchedFields.password
+              ? "Password is required"
+              : ""
+          }
+          messageType={
+            formData.password
+              ? touchedFields.password
+                ? Object.values(passwordRules).every(Boolean)
+                  ? "success"
+                  : "error"
+                : "non"
+              : touchedFields.password
+              ? "error"
+              : "non"
+          }
+          additionalContent={
+            <div className="mt-2">
+              <p
+                className={
+                  passwordRules.minLength ? "text-green-500" : "text-red-500"
+                }
+              >
+                {passwordRules.minLength
+                  ? "✔ characters minimum"
+                  : `✘ Minimum of 8 characters (${
+                      8 - formData.password.length
+                    } left)`}
+              </p>
+              <p
+                className={
+                  passwordRules.hasUpperCase ? "text-green-500" : "text-red-500"
+                }
+              >
+                {passwordRules.hasUpperCase ? "✔" : "✘"} 1 uppercase letter
+              </p>
+              <p
+                className={
+                  passwordRules.hasLowerCase ? "text-green-500" : "text-red-500"
+                }
+              >
+                {passwordRules.hasLowerCase ? "✔" : "✘"} 1 lowercase letter
+              </p>
+              <p
+                className={
+                  passwordRules.hasNumber ? "text-green-500" : "text-red-500"
+                }
+              >
+                {passwordRules.hasNumber ? "✔" : "✘"} 1 number
+              </p>
+              <p
+                className={
+                  passwordRules.hasSpecialChar
+                    ? "text-green-500"
+                    : "text-red-500"
+                }
+              >
+                {passwordRules.hasSpecialChar ? "✔" : "✘"} 1 special character
+              </p>
+            </div>
+          }
+        />
+      </div>
 
-      <FormField
-        label="Confirm Password"
-        type="password"
-        placeholder="Retype your password"
-        value={formData.confirmPassword}
-        onChange={handleChange}
-        // onBlur={validateForm}
-        message={message?.confirmPassword}
-        messageType={
-          message?.confirmPassword?.includes("Passwords do not match")
-            ? "error"
-            : "success"
-        }
-      />
+      <div className="relative">
+        <FormField
+          label="Confirm Password"
+          type={"password"}
+          placeholder="Retype your password"
+          value={confirmPassword}
+          isPasswordField={true}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          message={
+            touchedFields["confirm password"]
+              ? confirmPassword
+                ? message?.confirmPassword || confirmPassword
+                  ? formData.password === confirmPassword
+                    ? "Passwords match"
+                    : "Passwords do not match"
+                  : "Confirm your password"
+                : "Password is required"
+              : ""
+          }
+          messageType={
+            touchedFields["confirm password"]
+              ? confirmPassword
+                ? message?.confirmPassword || confirmPassword
+                  ? formData.password === confirmPassword
+                    ? "success"
+                    : "error"
+                  : "non"
+                : "error"
+              : "non"
+          }
+        />
+      </div>
 
-      <button
-        type="submit"
-        className="w-full bg-blue-500 text-white py-2 px-4 rounded disabled:bg-gray-400"
-        disabled={!isFormValid}
-      >
-        Register
-      </button>
+      <div className="flex items-center justify-between mt-6">
+        <p>
+          Already have an account?{" "}
+          <Link className="text-blue-500" href="/login">
+            Login
+          </Link>
+        </p>
+      </div>
+
+      <div className="relative">
+        <div
+          onMouseEnter={() => !isFormValid && setShowTooltip(true)} // Show tooltip if disabled
+          onMouseLeave={() => setShowTooltip(false)} // Hide tooltip on mouse leave
+        >
+          <button
+            type="submit"
+            className={`w-full bg-blue-500 text-white py-2 px-4 rounded ${
+              isFormValid ? "" : "bg-gray-400 cursor-not-allowed"
+            }`}
+            disabled={!isFormValid}
+          >
+            Register
+          </button>
+          {!isFormValid && showTooltip && (
+            <div className="absolute top-[-40px] left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-sm p-2 rounded shadow-lg z-50">
+              Please fill all fields correctly.
+            </div>
+          )}
+        </div>
+      </div>
     </form>
   );
 };

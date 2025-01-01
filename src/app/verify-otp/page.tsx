@@ -45,15 +45,16 @@ const VerifyOtpPage = () => {
       }
     } catch (error) {
       setError("Something went wrong. Please try again.");
+      console.error("Something went wrong. Please try again." + { error });
     }
   };
 
   const handleResendOtp = async () => {
     try {
       const resendOtpPayload = {
-        recipientType: "1",
+        recipientType: 1,
         recipient: localStorage.getItem("userEmail"),
-        purpose: "1",
+        purpose: 1,
       };
 
       const response = await fetch(
@@ -77,6 +78,7 @@ const VerifyOtpPage = () => {
       }
     } catch (error) {
       setError("Something went wrong. Please try again.");
+      console.error("Something went wrong. Please try again." + { error });
     }
   };
 

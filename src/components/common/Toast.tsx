@@ -8,6 +8,7 @@ type ToastProps = {
   message: string;
   onClose: () => void;
   type?: ToastType;
+  duration?: number; // optional duration
 };
 
 const Toast: React.FC<ToastProps> = ({
@@ -15,15 +16,27 @@ const Toast: React.FC<ToastProps> = ({
   message,
   onClose,
   type = "info",
+  duration = 1500, // default duration
 }) => {
   const [showAnimation, setShowAnimation] = useState(false);
+
+  // useEffect(() => {
+  //   if (isOpen) {
+  //     setShowAnimation(true);
+  //     setTimeout(() => setShowAnimation(false), 500); // Remove animation after 500ms
+  //   }
+  // }, [isOpen]);
 
   useEffect(() => {
     if (isOpen) {
       setShowAnimation(true);
-      setTimeout(() => setShowAnimation(false), 500); // Remove animation after 500ms
+      const timer = setTimeout(() => {
+        setShowAnimation(false);
+        onClose();
+      }, duration);
+      return () => clearTimeout(timer); // clear timer when component unmounts or when isOpen Changes
     }
-  }, [isOpen]);
+  }, [isOpen, duration, onClose]);
 
   if (!isOpen) return null;
 

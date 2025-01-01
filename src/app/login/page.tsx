@@ -6,10 +6,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
 import { useToast } from "@/context/ToastContext";
+// import Toast from "../../components/common/Toast";
 import Loader from "@/components/common/Loader";
 
 export default function Login() {
   const { showToast: showToast } = useToast();
+  const { hideToast: hideToast } = useToast();
 
   const { login } = useAuth();
   const router = useRouter();
@@ -25,23 +27,25 @@ export default function Login() {
     localStorage.setItem("userEmail", email);
 
     showToast(
-      "Your email is not verified. Redirecting to the verification page in 3 seconds...",
+      `Your email is not verified. Redirecting to the verification page in 3 seconds...`,
       "warning"
     );
 
-    let countdown = 3;
+    let countdown = 5;
     const interval = setInterval(() => {
       countdown--;
       showToast(
-        `Redirecting to the verification page in ${countdown} seconds...`,
-        "info"
+        `Your email is not verified. Redirecting to the verification page in ${countdown} seconds...`,
+        "warning"
       );
 
       if (countdown <= 0) {
         clearInterval(interval);
-        router.push("/verify-email");
+        router.push("/emailVerification");
       }
     }, 1000);
+
+    hideToast();
   };
 
   const handleLogin = async (e: React.FormEvent) => {
