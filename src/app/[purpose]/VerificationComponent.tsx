@@ -47,6 +47,7 @@ const VerificationComponent: React.FC<VerificationComponentProps> = ({
         `${process.env.NEXT_PUBLIC_API_URL}/Verification/send-otp`,
         {
           method: "POST",
+          credentials: "include",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         }
@@ -58,13 +59,20 @@ const VerificationComponent: React.FC<VerificationComponentProps> = ({
         localStorage.setItem("userEmail", email);
         // alert(data.message);
         showToast(data.message, "success");
-        router.push(`/verify-otp?purpose=${payloadPurpose}`);
+
+        // Redirect to OTP verification page based on the purpose
+        if (payloadPurpose === 1) {
+          router.push("/verify-otp?purpose=emailVerification");
+        } else {
+          router.push("/verify-otp?purpose=passwordReset");
+        }
       } else {
         setError(data.message);
       }
     } catch (error) {
       setError("Something went wrong. Please try again.");
-      console.error("Something went wrong. Please try again." + { error });
+      // console.error("Something went wrong. Please try again." + { error });
+      console.log("Something went wrong. Please try again." + { error });
     } finally {
       setIsLoading(false);
     }

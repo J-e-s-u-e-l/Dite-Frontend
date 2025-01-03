@@ -54,6 +54,7 @@ const Register = () => {
   const [isCheckingEmail, setIsCheckingEmail] = useState(false);
   const [isCheckingUsername, setIsCheckingUsername] = useState(false);
 
+  // Asynchronously check the email address availability
   const debouncedValidateEmail = useCallback(
     debounce(async (email: string) => {
       setMessages((prev) => ({
@@ -75,6 +76,7 @@ const Register = () => {
     []
   );
 
+  // Asynchronously check the username availability
   const debouncedValidateUsername = useCallback(
     debounce(async (username: string) => {
       setMessages((prev) => ({
@@ -113,7 +115,6 @@ const Register = () => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
 
-    // Update form data
     setFormData((prev) => ({ ...prev, [name]: value }));
 
     setTouchedFields((prev) => ({ ...prev, [name]: true }));
@@ -156,6 +157,7 @@ const Register = () => {
     }
   };
 
+  // Validating confirm password against password
   useEffect(() => {
     if (confirmPassword) {
       const confirmPasswordError = validateConfirmPassword(
@@ -175,6 +177,7 @@ const Register = () => {
     }
   }, [formData.password, confirmPassword]);
 
+  // Validating all form fields before enabling submit button
   useEffect(() => {
     const areAllFieldsValid = () => {
       // Check email validity
@@ -234,6 +237,7 @@ const Register = () => {
         `${process.env.NEXT_PUBLIC_API_URL}/Registration/user`,
         {
           method: "POST",
+          credentials: "include",
           headers: {
             "Content-Type": "application/json",
           },
@@ -287,6 +291,7 @@ const Register = () => {
           onBlur={handleBlur}
           message={touchedFields.email ? message?.email : null}
           messageType={
+            // This code sets messageType to "success" for valid input, "error" for validation issues, and "non" if no conditions match, based on the touchedFields and message content for the field.
             touchedFields?.email && message?.email?.includes("is available")
               ? "success"
               : message?.email
@@ -307,6 +312,7 @@ const Register = () => {
           onBlur={handleBlur}
           message={touchedFields.username ? message?.username : null}
           messageType={
+            //This sets messageType to "success" for valid input, "error" for validation issues, and "non" if no conditions match, based on the touchedFields and message content for the field.
             touchedFields.username &&
             message?.username?.includes("is available")
               ? "success"
@@ -358,6 +364,7 @@ const Register = () => {
               : ""
           }
           messageType={
+            // This code sets messageType to "success" for valid input, "error" for validation issues, and "non" if no conditions match, based on the touchedFields and message content for the field.
             formData.password
               ? touchedFields.password
                 ? Object.values(passwordRules).every(Boolean)
@@ -437,6 +444,7 @@ const Register = () => {
               : ""
           }
           messageType={
+            // This code sets messageType to "success" for valid input, "error" for validation issues, and "non" if no conditions match, based on the touchedFields and message content for the field.
             touchedFields["confirm password"]
               ? confirmPassword
                 ? message?.confirmPassword || confirmPassword

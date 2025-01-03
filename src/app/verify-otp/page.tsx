@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
+import { useToast } from "@/context/ToastContext";
+
 const VerifyOtpPage = () => {
   const [otp, setOtp] = useState("");
   const [error, setError] = useState("");
@@ -10,18 +12,20 @@ const VerifyOtpPage = () => {
   const [timer, setTimer] = useState(30); // Initial timer value in seconds
   const router = useRouter();
 
+  const { showToast: showToast } = useToast();
+
   const searchParams = useSearchParams();
   const purpose = searchParams.get("purpose");
 
-  const payloadPurpose = purpose === "emailVerification" ? "1" : "2";
+  const payloadPurpose = purpose === "emailVerification" ? 1 : 2;
 
   const handleOtpChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setOtp(e.target.value);
   };
 
   const payload = {
-    otpCode: otp,
-    purpose: payloadPurpose,
+    Code: otp,
+    Purpose: payloadPurpose,
   };
 
   const handleVerifyOtp = async () => {
@@ -30,6 +34,7 @@ const VerifyOtpPage = () => {
         `${process.env.NEXT_PUBLIC_API_URL}/Verification/verify-otp`,
         {
           method: "POST",
+          credentials: "include",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         }
@@ -38,7 +43,8 @@ const VerifyOtpPage = () => {
       const data = await response.json();
 
       if (data.status) {
-        alert(data.message);
+        // alert(data.message);
+        showToast(data.message, "success");
         router.push("/login");
       } else {
         setError(data.message);
@@ -72,7 +78,8 @@ const VerifyOtpPage = () => {
       const data = await response.json();
 
       if (data.status) {
-        alert(data.message);
+        // alert(data.message);
+        showToast(data.message, "success");
       } else {
         setError(data.message);
       }
@@ -82,6 +89,7 @@ const VerifyOtpPage = () => {
     }
   };
 
+  // Resend timer functionality
   useEffect(() => {
     let interval;
     if (isResendDisabled) {
