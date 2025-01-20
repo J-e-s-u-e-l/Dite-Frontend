@@ -67,7 +67,7 @@ const CreateAcademy = () => {
         setError("");
 
         // Redirect to academy home page
-        router.push(`/academy/${response.data.academyId}/home`);
+        router.push(`/academy/${data.data.academyId}/home`);
       } else {
         showToast(data.message, "error");
         setError(data.message);

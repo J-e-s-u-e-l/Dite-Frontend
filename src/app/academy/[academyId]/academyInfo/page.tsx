@@ -1,0 +1,274 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { useToast } from "@/context/ToastContext";
+import apiClient from "@/utils/apiClient";
+import { useParams } from "next/navigation";
+
+interface Member {
+  userId: string;
+  username: string;
+  role: string;
+  assignedTracks?: string[];
+}
+
+const AcademyInfoPage = () => {
+  const { academyId } = useParams();
+  const [members, setMembers] = useState<Member[]>([]);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [selectedMember, setSelectedMember] = useState<Member | null>(null);
+  const [roleModalOpen, setRoleModalOpen] = useState(false);
+  const [removeModalOpen, setRemoveModalOpen] = useState(false);
+  const [newRole, setNewRole] = useState("Member");
+  const [assignedTracks, setAssignedTracks] = useState<string[]>([]);
+  const [tracks, setTracks] = useState<{ id: string; name: string }[]>([]);
+  const { showToast } = useToast();
+
+  const fetchTracks = async () => {
+    try {
+      const response = await apiClient.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/Academies/${academyId}/tracks`
+      );
+      const data = await response.data;
+      if (data.status) {
+        setTracks(response.data.tracks);
+      } else {
+        showToast(data.message, "error");
+      }
+    } catch (error) {
+      showToast("Failed to fetch tracks. Please try again", "error");
+      console.error("Error fetching tracks", error);
+    }
+
+    useEffect(() => {
+      fetchTracks();
+    }, [academyId]);
+
+    const addTrack = () => setAssignedTracks([...assignedTracks, ""]);
+    const removeTrack = (index: number) =>
+      setAssignedTracks(assignedTracks.filter((_, i) => i !== index));
+    const updateTracks = (index: number, value: string) =>
+      setAssignedTracks(
+        assignedTracks.map((track, i) => (i === index ? value : track))
+      );
+
+    const fetchMembers = async () => {
+      try {
+        const response = await apiClient.get(
+          `${process.env.NEXT_PUBLIC_API_URL}/Academies/${academyId}/members`
+        );
+
+        const data = await response.data;
+        if (data.status) {
+          setMembers(response.data.members);
+          setIsAdmin(response.data.isAdmin);
+        } else {
+          showToast(data.message, "error");
+        }
+      } catch (error) {
+        showToast("Failed to fetch members. Please try again", "error");
+        console.error("Error fetching members", error);
+      }
+    };
+
+    const handleRemoveUser = async () => {
+      if (!selectedMember) return;
+
+      try {
+        const response = await apiClient.delete(
+          `${process.env.NEXT_PUBLIC_API_URL}/Academies/${academyId}/members/${selectedMember.userId}`
+        );
+
+        const data = await response.data;
+        if (data.status) {
+          showToast(data.message, "success");
+          setMembers((prev) =>
+            prev.filter((member) => member.userId !== selectedMember.userId)
+          );
+          setRemoveModalOpen(false);
+          // fetchMembers();
+        } else {
+          showToast(data.message, "error");
+        }
+      } catch (error) {
+        showToast("Failed to remove user. Please try again", "error");
+        console.error("Error removing members", error);
+      }
+    };
+
+    const handleChangeRole = async () => {
+      if (!selectedMember) return;
+
+      try {
+        const payload = { role: newRole, tracks: assignedTracks };
+        const response = await apiClient.put(
+          `${process.env.NEXT_PUBLIC_API_URL}/Academies/${academyId}/members/${selectedMember.userId}`,
+          payload
+        );
+
+        const data = await response.data;
+        if (data.status) {
+          showToast(data.message, "success");
+          setMembers((prev) =>
+            prev.map((member) =>
+              member.userId === selectedMember.userId
+                ? { ...member, role: newRole, assignedTracks }
+                : member
+            )
+          );
+          setRoleModalOpen(false);
+        } else {
+          showToast(data.message, "error");
+        }
+      } catch (error) {
+        showToast("Failed to update role. Please try again.", "error");
+        console.error("Failed to update role.", error);
+      }
+    };
+
+    useEffect(() => {
+      fetchMembers();
+    }, [academyId]);
+
+    return (
+      <div className="p-6 bg-gray-100 min-h-screen">
+        <h1 className="text-2xl font-bold text-gray-800 mb-4">
+          Academy Members
+        </h1>
+        <div className="bg-white rounded-lg shadow-md p-4">
+          {members.map((member) => (
+            <div
+              key={member.userId}
+              className="flex justify-between items-center border-b pb-3 mb-3"
+            >
+              <div>
+                <h3 className="text-lg font-medium">{member.username}</h3>
+                <p className="text-sm text-gray-500">{member.role}</p>
+              </div>
+              {isAdmin && (
+                <div className="relative">
+                  <button
+                    className="text-gray-600 hover:text-gray-800"
+                    onClick={() => setSelectedMember(member)}
+                  >
+                    ⋮
+                  </button>
+                  {selectedMember?.userId === member.userId && (
+                    <div className="absolute right-0 mt-2 w-40 bg-white shadow-lg rounded">
+                      <button
+                        className="block w-full text-left px-4 text-gray-700 hover:bg-gray-200"
+                        onClick={() => {
+                          setRoleModalOpen(true);
+                          setNewRole(member.role);
+                          setAssignedTracks(member.assignedTracks || []);
+                        }}
+                      >
+                        Change Role
+                      </button>
+                      <button
+                        className="block w-full text-left px-4 py-2 text-red-600 hover:bg-red-200"
+                        onClick={() => setRemoveModalOpen(true)}
+                      >
+                        Remove User
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Role Change Modal */}
+        {roleModalOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+            <div className="bg-white p-6 rounded-lg shadow-lg">
+              <h2 className="text-xl font-semibold mb-4">Change Role</h2>
+              <div className="mb-4">
+                <label className="block mb-2">Role</label>
+                <select
+                  value={newRole}
+                  onChange={(e) => setNewRole(e.target.value)}
+                  className="w-full p-2 border rounded"
+                >
+                  <option value="Admin">Admin</option>
+                  <option value="Facilitator">Facilitator</option>
+                  <option value="Member">Member</option>
+                </select>
+              </div>
+              {newRole === "Facilitator" && (
+                <div>
+                  <label className="block mb-2">Assigned Tracks</label>
+                  {assignedTracks.map((track, index) => (
+                    <div key={index} className="flex items-center mb-2">
+                      <input
+                        value={track}
+                        onChange={(e) => updateTracks(index, e.target.value)}
+                        className="flex-grow p-2 border rounded mr-2"
+                        placeholder="Enter track name"
+                      />
+                      <button
+                        onClick={() => removeTrack(index)}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    onClick={addTrack}
+                    className="text-blue-500 hover:text-blue-700"
+                  >
+                    + Add Track
+                  </button>
+                </div>
+              )}
+              <div className="flex justify-end mt-4">
+                <button
+                  onClick={() => setRoleModalOpen(false)}
+                  className="px-4 py-2 mr-2 bg-gray-300 rounded"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleChangeRole}
+                  className="px-4 py-2 bg-blue-500 text-white rounded"
+                >
+                  Confirm
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Remove User Modal */}
+        {removeModalOpen && (
+          <div className="fixed inset=0 bg-black bg-opacity-50 flex justify-center items-center">
+            <div className="bg-white p-6 rounded-lg shadow-lg">
+              <h2 className="text-xl font-semibold mb-4">Remove User</h2>
+              <p className="mb-4">
+                Are you sure you want to remove {selectedMember?.username} from
+                the academy?
+              </p>
+              <div className="flex justify-end">
+                <button
+                  onClick={() => setRemoveModalOpen(false)}
+                  className="px-4 py-2 mr-2 bg-gray-300 rounded"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleRemoveUser}
+                  className="px-4 py-2 bg-red-500 text-white rounded"
+                >
+                  Confirm
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+};
+export default AcademyInfoPage;

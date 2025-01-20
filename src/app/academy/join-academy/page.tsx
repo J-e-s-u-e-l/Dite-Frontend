@@ -68,6 +68,7 @@ const JoinAcademy = () => {
                 placeholder="Enter academy code"
                 value={academyCode}
                 onChange={(e) => setAcademyCode(e.target.value)}
+                required
               />
             </div>
 
