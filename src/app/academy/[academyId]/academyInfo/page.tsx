@@ -168,9 +168,9 @@ const AcademyInfoPage = () => {
         academyId,
       };
 
-      const response = await apiClient.delete(
+      const response = await apiClient.put(
         // `${process.env.NEXT_PUBLIC_API_URL}/Academies/${academyId}/members/${selectedMember.userId}`
-        `${process.env.NEXT_PUBLIC_API_URL}/Academies/member/remove-member}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/Academies/members/remove-member`,
         payload
       );
 
