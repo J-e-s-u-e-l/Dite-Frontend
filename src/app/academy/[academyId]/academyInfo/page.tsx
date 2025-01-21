@@ -33,6 +33,7 @@ const AcademyInfoPage = () => {
   const { showToast } = useToast();
 
   const fetchMembers = async () => {
+    setLoading(true);
     try {
       const response = await apiClient.get(
         `${process.env.NEXT_PUBLIC_API_URL}/Academies/${academyId}/members`
@@ -82,6 +83,39 @@ const AcademyInfoPage = () => {
     }
   }, [academyId]);
 
+  const toggleSelectedMember = (member) => {
+    if (selectedMember?.userId === member.userId) {
+      setSelectedMember(null); // Deselect the member to close the modal
+    } else {
+      setSelectedMember(member); // Select the member to open the modal
+    }
+  };
+
+  const renderMoreOptionsModal = () => {
+    if (!selectedMember) return null;
+
+    return (
+      <div className="absolute right-0 mt-2 w-40 bg-white shadow-lg rounded">
+        <button
+          className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-200"
+          onClick={() => {
+            setRoleModalOpen(true);
+            setNewRole(selectedMember.roleName);
+            setAssignedTracks(selectedMember.assignedTracks || []);
+          }}
+        >
+          Change Role
+        </button>
+        <button
+          className="block w-full text-left px-4 py-2 text-red-600 hover:bg-red-200"
+          onClick={() => setRemoveModalOpen(true)}
+        >
+          Remove User
+        </button>
+      </div>
+    );
+  };
+
   // Add new empty track selection
   // const addTrack = () => setAssignedTracks([...assignedTracks, ""]);
   const addTrack = () => {
@@ -115,7 +149,7 @@ const AcademyInfoPage = () => {
       (assignedTracks.length === 0 || assignedTracks.some((track) => !track))
     ) {
       showToast(
-        "Please select at least one track for the Facilitator role.",
+        "Please select at valid track for the Facilitator role.",
         "info"
       );
       return false;
@@ -127,9 +161,17 @@ const AcademyInfoPage = () => {
   const handleRemoveUser = async () => {
     if (!selectedMember) return;
 
+    setLoading(true);
     try {
+      const payload: any = {
+        memberId: selectedMember.userId,
+        academyId,
+      };
+
       const response = await apiClient.delete(
-        `${process.env.NEXT_PUBLIC_API_URL}/Academies/${academyId}/members/${selectedMember.userId}`
+        // `${process.env.NEXT_PUBLIC_API_URL}/Academies/${academyId}/members/${selectedMember.userId}`
+        `${process.env.NEXT_PUBLIC_API_URL}/Academies/member/remove-member}`,
+        payload
       );
 
       const data = await response.data;
@@ -138,32 +180,34 @@ const AcademyInfoPage = () => {
         setMembers((prev) =>
           prev.filter((member) => member.userId !== selectedMember.userId)
         );
+        handleReload();
+        setSelectedMember(null);
         setRemoveModalOpen(false);
-        // fetchMembers();
       } else {
         showToast(data.message, "error");
       }
     } catch (error) {
       showToast("Failed to remove user. Please try again", "error");
       console.error("Error removing members", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleChangeRole = async () => {
     if (!selectedMember) return;
-    // if (!validateChangeRoleForm()) return;
     if (!validateChangeRoleForm()) return;
 
+    setLoading(true);
     try {
-      // const payload = { role: newRole, tracks: assignedTracks };
       const payload: any = {
-        userId: selectedMember.userId,
+        memberId: selectedMember.userId,
         newRole,
         academyId,
       };
 
       if (newRole === "Facilitator") {
-        payload.assignedTracks = assignedTracks; // Include tracks only for Facilitators
+        payload.assignedTracksIds = assignedTracks; // Include tracks only for Facilitators
       }
 
       const response = await apiClient.put(
@@ -182,7 +226,8 @@ const AcademyInfoPage = () => {
               : member
           )
         );
-        // fetchMembers();
+        handleReload();
+        setSelectedMember(null);
         setRoleModalOpen(false);
       } else {
         showToast(data.message, "error");
@@ -190,10 +235,13 @@ const AcademyInfoPage = () => {
     } catch (error) {
       showToast("Failed to update role. Please try again.", "error");
       console.error("Failed to update role.", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleReload = () => {
+    setPageError("");
     fetchMembers();
     fetchTracks();
   };
@@ -233,30 +281,13 @@ const AcademyInfoPage = () => {
               <div className="relative">
                 <button
                   className="text-gray-600 hover:text-gray-800"
-                  onClick={() => setSelectedMember(member)}
+                  // onClick={() => setSelectedMember(member)}
+                  onClick={() => toggleSelectedMember(member)}
                 >
                   ⋮
                 </button>
-                {selectedMember?.userId === member.userId && (
-                  <div className="absolute right-0 mt-2 w-40 bg-white shadow-lg rounded">
-                    <button
-                      className="block w-full text-left px-4 text-gray-700 hover:bg-gray-200"
-                      onClick={() => {
-                        setRoleModalOpen(true);
-                        setNewRole(member.roleName);
-                        setAssignedTracks(member.assignedTracks || []);
-                      }}
-                    >
-                      Change Role
-                    </button>
-                    <button
-                      className="block w-full text-left px-4 py-2 text-red-600 hover:bg-red-200"
-                      onClick={() => setRemoveModalOpen(true)}
-                    >
-                      Remove User
-                    </button>
-                  </div>
-                )}
+                {selectedMember?.userId === member.userId &&
+                  renderMoreOptionsModal()}
               </div>
             )}
           </div>
