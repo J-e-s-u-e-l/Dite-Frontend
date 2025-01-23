@@ -48,6 +48,7 @@ const AcademyInfoPage = () => {
       }
     } catch (error) {
       showToast("Failed to fetch members. Please try again", "error");
+      // setPageError("Failed to load Academy Info page. Please try again.");
       console.error("Error fetching members", error);
     }
   };
