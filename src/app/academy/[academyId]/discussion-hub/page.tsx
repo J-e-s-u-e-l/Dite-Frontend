@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { fetchMessages } from "@/services/messageServices";
+import { fetchMessages } from "@/services/discussionHubServices";
 import {
   startSignalRConnection,
   subscribeToMessages,
@@ -14,8 +14,8 @@ import Loader from "@/components/common/Loader";
 import PostMessageModal from "@/components/feature/academy/PostMessageModal";
 
 const DiscussionHubPage: React.FC = () => {
-  const [messages, setMessages] = React.useState<any[]>([]);
-  // const [isModalOpen, setModalOpen] = useState(false);
+  // const [messages, setMessages] = React.useState<any[]>([]);
+  const [messages, setMessages] = useState<any[]>([]);
   const [isModalOpen, setModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [pageError, setPageError] = useState("");
@@ -76,30 +76,25 @@ const DiscussionHubPage: React.FC = () => {
   }
   // if (pageError) return <div>Error: {pageError}</div>;
 
-  // if (pageError) {
-  //   return (
-  //     <div className="text-center mt-10">
-  //       <p className="text-red-500">{pageError}</p>
-  //       <button
-  //         onClick={handleReload}
-  //         className="mt-4 p-2 rounded bg-yellow-400 hover:bg-yellow-500 focus:outline-none"
-  //       >
-  //         Try again
-  //       </button>
-  //     </div>
-  //   );
-  // }
+  if (pageError) {
+    return (
+      <div className="text-center mt-10">
+        <p className="text-red-500">{pageError}</p>
+        <button
+          onClick={handleReload}
+          className="mt-4 p-2 rounded bg-yellow-400 hover:bg-yellow-500 focus:outline-none"
+        >
+          Try again
+        </button>
+      </div>
+    );
+  }
 
   return (
+    // <div className="relative">
     <div>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">Discussion Hub</h2>
-        <button
-          className="bg-blue-500 text-white px-4 py-2 rounded-md"
-          onClick={() => setModalOpen(true)}
-        >
-          Post Message
-        </button>
       </div>
       {messages.length === 0 ? (
         <div>No messages yet. Start the discussion!</div>
@@ -108,6 +103,12 @@ const DiscussionHubPage: React.FC = () => {
           <MessageCard key={index} message={message} />
         ))
       )}
+      <button
+        className="bg-blue-500 text-white px-4 py-2 rounded-md fixed bottom-20 right-10"
+        onClick={() => setModalOpen(true)}
+      >
+        Post Message
+      </button>
       <PostMessageModal
         isOpen={isModalOpen}
         onClose={() => setModalOpen(false)}

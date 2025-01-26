@@ -1,7 +1,57 @@
-export default function Notifications() {
+"use client";
+
+import { useEffect, useState } from "react";
+import NotificationList from "@/components/feature/notifications/NotificationList";
+import NotificationSearchFilter from "@/components/feature/notifications/NotificationSearchFilter";
+import { fetchAllNotifications } from "@/services/notificationServices";
+import {
+  startSignalRConnection,
+  subscribeToNotifications,
+} from "@/services/signalRServices";
+
+const NotificationPage = () => {
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filters, setFilters] = useState({ unread: false, search: "" });
+
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      setLoading(true);
+      const response = await fetchAllNotifications();
+      setNotifications(response);
+      setLoading(false);
+    };
+
+    fetchNotifications();
+  }, []);
+
+  startSignalRConnection();
+  subscribeToNotifications((newNotification) => {
+    setNotifications((prev) => [newNotification, ...prev]);
+  });
+
+  // Filter notifications based on the selected filters
+  const filteredNotifications = notifications.filter((notification) => {
+    const matchesSearch = notification.title.includes(filters.search);
+    const matchesReadStatus = filters.unread ? !notification.read : true;
+    return matchesSearch && matchesReadStatus;
+  });
+
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center">
-      <h1 className="text-4xl font-bold text-blue-600">Notifications Page</h1>
+    <div>
+      <h1>Notifications</h1>
+      <NotificationSearchFilter setFilters={setFilters} />
+      {loading ? (
+        <p>
+          <i>Loading notifications...</i>
+        </p>
+      ) : (
+        <NotificationList
+          notifications={filteredNotifications}
+        ></NotificationList>
+      )}
     </div>
   );
-}
+};
+
+export default NotificationPage;

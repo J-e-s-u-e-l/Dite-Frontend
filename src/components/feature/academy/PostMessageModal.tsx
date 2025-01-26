@@ -1,17 +1,17 @@
 // "use client";
 
 import React, { useEffect, useState } from "react";
-import { postMessage } from "@/services/messageServices";
+import { postMessage } from "@/services/discussionHubServices";
 import { fetchTracks } from "@/services/academyServices";
 
 interface PostMessageModalProps {
   isOpen: boolean;
   onClose: () => void;
   onMessagePosted: (newMessage: any) => void;
-  academyId: string;
+  academyId: any;
 }
 
-const PostMessageModal = (React.FC<PostMessageModalProps> = ({
+const PostMessageModal: React.FC<PostMessageModalProps> = ({
   isOpen,
   onClose,
   onMessagePosted,
@@ -20,9 +20,11 @@ const PostMessageModal = (React.FC<PostMessageModalProps> = ({
   const [messageTitle, setMessageTitle] = useState("");
   const [messageBody, setMessageBody] = useState("");
   //   const [trackId, setTrackId] = useState("");
-  const [tracks, setTracks] = useState<
+  const [tracksInAcademy, setTracksInAcademy] = useState<
     { trackId: string; trackName: string }[]
   >([]);
+  // const [selectedTrack, setSelectedTrack] = useState<string | null>("");
+  const [selectedTrack, setSelectedTrack] = useState("");
   //   const [academyId, setAcademyId] = useState("");
   const [loading, setLoading] = useState(false);
   const [loadingTracks, setTracksLoading] = useState(false);
@@ -31,8 +33,10 @@ const PostMessageModal = (React.FC<PostMessageModalProps> = ({
   const fetchTracksInAcademy = async () => {
     setTracksLoading(true);
     try {
-      const fetchedTracks = await fetchTracks(academyId);
-      setTracks(fetchedTracks);
+      const response = await fetchTracks(academyId);
+
+      const fetchedTracks = response.data;
+      setTracksInAcademy(fetchedTracks);
     } catch (error) {
       // showToast("Failed to fetch tracks. Please try again", "error");
       // setPageError(
@@ -43,6 +47,9 @@ const PostMessageModal = (React.FC<PostMessageModalProps> = ({
       setTracksLoading(false);
     }
   };
+  useEffect(() => {
+    fetchTracksInAcademy();
+  }, [academyId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,12 +57,16 @@ const PostMessageModal = (React.FC<PostMessageModalProps> = ({
     setError("");
 
     try {
-      const newMessage = await postMessage({
+      const payload: any = {
         messageTitle,
         messageBody,
         academyId,
-        trackId: trackId || undefined,
-      });
+        // trackId: trackId || undefined,
+      };
+      if (selectedTrack != "") {
+        payload.trackId = selectedTrack;
+      }
+      const newMessage = await postMessage(payload);
 
       onMessagePosted(newMessage);
       onClose();
@@ -70,13 +81,22 @@ const PostMessageModal = (React.FC<PostMessageModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-      <div className="bg-white rounded-md shadow-md w-full max-w-md">
-        <h2 className="text-xl font-bold mb-4">Post a New Message</h2>
-        {error && <div className="text-red-500 text-sm mb-4">{error}</div>}
+      <div className="bg-white rounded-md shadow-lg w-full max-w-md p-6">
+        <h2 className="text-2xl font-semibold text-gray-800 mb-6">
+          Post a New Message
+        </h2>
+
+        {error && (
+          <div className="bg-red-100 text-red-700 p-2 rounded-md mb-4 text-sm">
+            {error}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit}>
-          <div className="mb4">
+          {/* Title Input */}
+          <div className="mb-6">
             <label
-              className="block text-sm fon-medium mb-2"
+              className="block text-sm font-medium text-gray-700 mb-2"
               htmlFor="messageTitle"
             >
               Title
@@ -86,13 +106,15 @@ const PostMessageModal = (React.FC<PostMessageModalProps> = ({
               type="text"
               value={messageTitle}
               onChange={(e) => setMessageTitle(e.target.value)}
-              className="border border-gray-300 rounded-md p-2 w-full"
+              className="border border-gray-300 rounded-md p-3 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
           </div>
-          <div className="mb4">
+
+          {/* Message Body */}
+          <div className="mb-6">
             <label
-              className="block text-sm font-medium mb-2"
+              className="block text-sm font-medium text-gray-700 mb-2"
               htmlFor="messageBody"
             >
               Message Body
@@ -101,38 +123,64 @@ const PostMessageModal = (React.FC<PostMessageModalProps> = ({
               id="messageBody"
               value={messageBody}
               onChange={(e) => setMessageBody(e.target.value)}
-              className="border border-gray-500 rounded-md p-2 w-full"
+              className="border border-gray-300 rounded-md p-3 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
               rows={4}
               required
-            ></textarea>
-          </div>
-          <div className="mb-4">
-            <label className="block text-sm font-medium mb-2" htmlFor="trackId">
-              Track (Optional)
-            </label>
-            <input
-              id="trackId"
-              type="text"
-              value={trackId}
-              onChange={(e) => setTrackId(e.target.value)}
-              className="border border-gray-300 rounded-md p-2 w-full"
             />
           </div>
-          <div className="flex justify-end">
+
+          {/* Track Selection */}
+          <div className="mb-6">
+            <label
+              className="block text-sm font-medium text-gray-700 mb-2"
+              htmlFor="trackId"
+            >
+              Track (Optional)
+            </label>
+
+            {loadingTracks ? (
+              <div className="text-sm text-gray-500">Loading tracks...</div>
+            ) : (
+              <div>
+                <select
+                  value={selectedTrack}
+                  onChange={(e) => setSelectedTrack(e.target.value)}
+                  className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">General</option>
+                  {tracksInAcademy.map((track) => (
+                    <option key={track.trackId} value={track.trackId}>
+                      {track.trackName}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+          </div>
+
+          {/* Submit Buttons */}
+          <div className="flex justify-end space-x-4">
             <button
               type="button"
-              className="mr-4 text-gray-500"
+              className="text-gray-600 font-medium p-2 rounded-md hover:bg-gray-100 disabled:opacity-50"
               onClick={onClose}
               disabled={loading}
             >
               Cancel
             </button>
-            <button>{loading ? "Posting message..." : "Post"}</button>
+            <button
+              type="submit"
+              className={`bg-blue-500 text-white font-semibold py-2 px-6 rounded-md focus:outline-none hover:bg-blue-600 transition-all ${
+                loading ? "opacity-50 cursor-wait" : ""
+              }`}
+            >
+              {loading ? "Posting message..." : "Post"}
+            </button>
           </div>
         </form>
       </div>
     </div>
   );
-});
+};
 
 export default PostMessageModal;

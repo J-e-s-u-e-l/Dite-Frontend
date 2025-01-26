@@ -5,7 +5,6 @@ import { useToast } from "@/context/ToastContext";
 import apiClient from "@/utils/apiClient";
 import { useParams } from "next/navigation";
 import Loader from "@/components/common/Loader";
-import { useRouter } from "next/navigation";
 
 interface Member {
   userId: string;
@@ -15,7 +14,6 @@ interface Member {
 }
 
 const AcademyInfoPage = () => {
-  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [pageError, setPageError] = useState("");
   const [error, setError] = useState("");
@@ -319,19 +317,6 @@ const AcademyInfoPage = () => {
                 <label className="block mb-2">Assigned Tracks</label>
                 {assignedTracks.map((trackId, index) => (
                   <div key={index} className="flex items-center mb-2">
-                    {/* <select
-                      value={trackId}
-                      onChange={(e) => updateTracks(index, e.target.value)}
-                      className="flex-grow p-2 border rounded mr-2"
-                    >
-                      <option value="">Select a track</option>
-                      {tracks.map((track) => (
-                        // <option key={track.} value={track.id}>
-                        <option key={track.trackId} value={track.trackName}>
-                          {track.trackName}
-                        </option>
-                      ))}
-                    </select> */}
                     <select
                       value={trackId}
                       onChange={(e) => updateTracks(index, e.target.value)}

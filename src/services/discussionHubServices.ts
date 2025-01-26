@@ -4,7 +4,9 @@ import apiClient from "@/utils/apiClient";
 export const fetchMessages = async (academyId): Promise<any[]> => {
   try {
     const response = await apiClient.get(
-      `${process.env.NEXT_PUBLIC_API_URL}/${academyId}/messages`
+      // `${process.env.NEXT_PUBLIC_API_URL}/${academyId}/messages`
+      `${process.env.NEXT_PUBLIC_API_URL}/academies/messages`,
+      academyId
     );
     if (!response.data.status) {
       throw new Error(response.data.message);
