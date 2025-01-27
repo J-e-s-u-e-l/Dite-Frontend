@@ -19,16 +19,17 @@ const DiscussionHubPage: React.FC = () => {
   const [isModalOpen, setModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [pageError, setPageError] = useState("");
+  const [pageNumber, setPageNumber] = useState(1);
 
   const { academyId } = useParams();
   const { showToast } = useToast();
 
   // Fetch messages on initial load
 
-  const fetchInitialMessages = async () => {
+  const fetchInitialMessages = async (pageNumber: number) => {
     setLoading(true);
     try {
-      const response = await fetchMessages(academyId);
+      const response = await fetchMessages(academyId, pageNumber);
       setMessages(response);
     } catch (error) {
       showToast("Failed to fetch messages. Please try again", "error");
@@ -41,7 +42,7 @@ const DiscussionHubPage: React.FC = () => {
     }
   };
   useEffect(() => {
-    fetchInitialMessages();
+    fetchInitialMessages(1);
   }, [academyId]);
 
   // Connect to SignalR hub and subscribe to messages
@@ -63,12 +64,16 @@ const DiscussionHubPage: React.FC = () => {
 
   const handleReload = () => {
     setPageError("");
-    fetchInitialMessages();
+    fetchInitialMessages(1);
     startSignalRConnection();
   };
 
   const handleNewMessage = (newMessage: any) => {
     setMessages((prev) => [newMessage, ...prev]);
+  };
+
+  const handlePageChange = async (pageNumber: number) => {
+    fetchInitialMessages(pageNumber);
   };
 
   if (loading) {
@@ -91,7 +96,6 @@ const DiscussionHubPage: React.FC = () => {
   }
 
   return (
-    // <div className="relative">
     <div>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">Discussion Hub</h2>
@@ -109,6 +113,18 @@ const DiscussionHubPage: React.FC = () => {
       >
         Post Message
       </button>
+
+      {/* Pagination Controls */}
+      <div className="pagination">
+        <button
+          onClick={() => handlePageChange(pageNumber - 1)}
+          disabled={pageNumber <= 1}
+        >
+          Previous
+        </button>
+        <span>{pageNumber}</span>
+        <button onClick={() => handlePageChange(pageNumber + 1)}>Next</button>
+      </div>
       <PostMessageModal
         isOpen={isModalOpen}
         onClose={() => setModalOpen(false)}

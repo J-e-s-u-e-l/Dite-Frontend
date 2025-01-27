@@ -45,6 +45,8 @@ const NotificationPage = () => {
         <p>
           <i>Loading notifications...</i>
         </p>
+      ) : notifications.length === 0 ? (
+        <p>You don’t have any notifications at the moment.</p>
       ) : (
         <NotificationList
           notifications={filteredNotifications}

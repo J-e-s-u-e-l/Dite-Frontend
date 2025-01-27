@@ -1,12 +1,24 @@
 import apiClient from "@/utils/apiClient";
 
 // export const fetchMessages = async (academyId: string): Promise<any[]> => {
-export const fetchMessages = async (academyId): Promise<any[]> => {
+export const fetchMessages = async (
+  academyId: string,
+  pageNumber: number
+): Promise<any[]> => {
   try {
+    const pageSize = 10;
+
+    const payload = {
+      params: {
+        academyId,
+        pageNumber,
+        pageSize,
+      },
+    };
     const response = await apiClient.get(
       // `${process.env.NEXT_PUBLIC_API_URL}/${academyId}/messages`
       `${process.env.NEXT_PUBLIC_API_URL}/academies/messages`,
-      academyId
+      payload
     );
     if (!response.data.status) {
       throw new Error(response.data.message);

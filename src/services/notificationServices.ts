@@ -16,6 +16,29 @@ export const fetchAllNotifications = async () => {
   }
 };
 
+export interface NotificationCountResponse {
+  status: boolean;
+  message: string;
+  unreadNotificationsCount: number;
+}
+export const getUnreadNotificationsCount = async () => {
+  try {
+    const response = await apiClient.get(
+      `${process.env.NEXT_PUBLIC_API_URL}/notifications/unreadNotifications-count`
+    );
+    if (!response.data.status) {
+      throw new Error(response.data.message);
+    }
+    // return response.data as NotificationCountResponse;
+    return response.data;
+  } catch (error) {
+    throw new Error(
+      error.response?.data?.message ||
+        "Failed to fetch unread notifications count"
+    );
+  }
+};
+
 export const markNotificationAsRead = async (notificationId: string) => {
   try {
     const response = await apiClient.put(
