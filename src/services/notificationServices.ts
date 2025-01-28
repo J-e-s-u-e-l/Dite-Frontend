@@ -3,7 +3,7 @@ import apiClient from "@/utils/apiClient";
 export const fetchAllNotifications = async () => {
   try {
     const response = await apiClient.get(
-      `${process.env.NEXT_PUBLIC_API_URL}/notifications`
+      `${process.env.NEXT_PUBLIC_API_URL}/notifications/get-all-notifications`
     );
     if (!response.data.status) {
       throw new Error(response.data.message);
@@ -24,7 +24,7 @@ export interface NotificationCountResponse {
 export const getUnreadNotificationsCount = async () => {
   try {
     const response = await apiClient.get(
-      `${process.env.NEXT_PUBLIC_API_URL}/notifications/unreadNotifications-count`
+      `${process.env.NEXT_PUBLIC_API_URL}/Notifications/unreadNotifications-count`
     );
     if (!response.data.status) {
       throw new Error(response.data.message);

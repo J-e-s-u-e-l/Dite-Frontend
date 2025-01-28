@@ -1,10 +1,7 @@
 import apiClient from "@/utils/apiClient";
 
-// export const fetchMessages = async (academyId: string): Promise<any[]> => {
-export const fetchMessages = async (
-  academyId: string,
-  pageNumber: number
-): Promise<any[]> => {
+// export const fetchMessages = async (academyId, pageNumber): Promise<any[]> => {
+export const fetchMessages = async (academyId, pageNumber): Promise<any[]> => {
   try {
     const pageSize = 10;
 

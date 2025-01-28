@@ -12,14 +12,19 @@ import {
 const NotificationPage = () => {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filters, setFilters] = useState({ unread: false, search: "" });
+  // const [filters, setFilters] = useState({ unread: false, search: "" });
 
   useEffect(() => {
     const fetchNotifications = async () => {
-      setLoading(true);
-      const response = await fetchAllNotifications();
-      setNotifications(response);
-      setLoading(false);
+      try {
+        setLoading(true);
+        const response = await fetchAllNotifications();
+        setNotifications(response.data);
+      } catch (error) {
+        console.error("Error fetching notifications", error);
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchNotifications();
@@ -31,16 +36,17 @@ const NotificationPage = () => {
   });
 
   // Filter notifications based on the selected filters
-  const filteredNotifications = notifications.filter((notification) => {
-    const matchesSearch = notification.title.includes(filters.search);
-    const matchesReadStatus = filters.unread ? !notification.read : true;
-    return matchesSearch && matchesReadStatus;
-  });
+
+  // const filteredNotifications = notifications.filter((notification) => {
+  //   const matchesSearch = notification.title.includes(filters.search);
+  //   const matchesReadStatus = filters.unread ? !notification.read : true;
+  //   return matchesSearch && matchesReadStatus;
+  // });
 
   return (
     <div>
       <h1>Notifications</h1>
-      <NotificationSearchFilter setFilters={setFilters} />
+      {/* <NotificationSearchFilter setFilters={setFilters} /> */}
       {loading ? (
         <p>
           <i>Loading notifications...</i>
@@ -49,7 +55,8 @@ const NotificationPage = () => {
         <p>You don’t have any notifications at the moment.</p>
       ) : (
         <NotificationList
-          notifications={filteredNotifications}
+          // notifications={filteredNotifications}
+          notifications
         ></NotificationList>
       )}
     </div>

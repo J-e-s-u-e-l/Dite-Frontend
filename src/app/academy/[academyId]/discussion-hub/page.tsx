@@ -15,22 +15,23 @@ import PostMessageModal from "@/components/feature/academy/PostMessageModal";
 
 const DiscussionHubPage: React.FC = () => {
   // const [messages, setMessages] = React.useState<any[]>([]);
-  const [messages, setMessages] = useState<any[]>([]);
+  const [messages, setMessages] = useState<any[] | null>([]);
   const [isModalOpen, setModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [pageError, setPageError] = useState("");
   const [pageNumber, setPageNumber] = useState(1);
+  const [remainingMessagesCount, setRemainingMessagesCount] = useState(0);
 
   const { academyId } = useParams();
   const { showToast } = useToast();
-
-  // Fetch messages on initial load
 
   const fetchInitialMessages = async (pageNumber: number) => {
     setLoading(true);
     try {
       const response = await fetchMessages(academyId, pageNumber);
-      setMessages(response);
+      // setMessages(response);
+      setMessages(response.data.messages);
+      setRemainingMessagesCount(response.data.remainingMessagesCount);
     } catch (error) {
       showToast("Failed to fetch messages. Please try again", "error");
       setPageError(
@@ -96,16 +97,18 @@ const DiscussionHubPage: React.FC = () => {
   }
 
   return (
-    <div>
+    // <div className="overflow-y-scroll h-full p-6">
+    // <div className="bg-purple-400">
+    <div className="p-6 bg-grey-100">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">Discussion Hub</h2>
       </div>
-      {messages.length === 0 ? (
-        <div>No messages yet. Start the discussion!</div>
-      ) : (
+      {messages && messages.length > 0 ? (
         messages.map((message, index) => (
           <MessageCard key={index} message={message} />
         ))
+      ) : (
+        <div>No messages yet. Start the discussion!</div>
       )}
       <button
         className="bg-blue-500 text-white px-4 py-2 rounded-md fixed bottom-20 right-10"
@@ -115,16 +118,34 @@ const DiscussionHubPage: React.FC = () => {
       </button>
 
       {/* Pagination Controls */}
-      <div className="pagination">
+      <div className="pagination mt-4 flex items-center justify-center space-x-4">
         <button
           onClick={() => handlePageChange(pageNumber - 1)}
           disabled={pageNumber <= 1}
+          className={`px-4 py-2 rounded-md text-white font-medium ${
+            pageNumber <= 1
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-blue-500 hover:bg-blue-600"
+          }`}
         >
           Previous
         </button>
-        <span>{pageNumber}</span>
-        <button onClick={() => handlePageChange(pageNumber + 1)}>Next</button>
+        <span className="text-lg font-semibold text-gray-700">
+          {pageNumber}
+        </span>
+        <button
+          onClick={() => handlePageChange(pageNumber + 1)}
+          className={`px-4 py-2 text-white rounded-md font-medium ${
+            remainingMessagesCount <= 1
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-blue-500 hover:bg-blue-600"
+          }`}
+          disabled={remainingMessagesCount <= 0}
+        >
+          Next
+        </button>
       </div>
+
       <PostMessageModal
         isOpen={isModalOpen}
         onClose={() => setModalOpen(false)}

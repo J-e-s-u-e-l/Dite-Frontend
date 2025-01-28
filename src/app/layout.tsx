@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "../context/authContext";
 import { ToastProvider } from "@/context/ToastContext";
-import SidebarLayout from "@/components/layout/SidebarLayout"; // Adjust path to SidebarLayout
+import PageLayout from "@/components/layout/SidebarLayout"; // Adjust path to SidebarLayout
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,7 +32,7 @@ export default function RootLayout({
       >
         <ToastProvider>
           <AuthProvider>
-            <SidebarLayout>{children}</SidebarLayout>
+            <PageLayout>{children}</PageLayout>
           </AuthProvider>
         </ToastProvider>
       </body>
