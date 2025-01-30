@@ -92,6 +92,8 @@ export default function Login() {
 
         // Call login from context
         login(data.data.token);
+        localStorage.setItem("userEmail", data.data.email);
+        localStorage.setItem("userName", data.data.username);
 
         // Redirect the user
         router.push(redirectTo ?? "/");

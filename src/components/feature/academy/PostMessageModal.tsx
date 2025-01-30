@@ -3,18 +3,19 @@
 import React, { useEffect, useState } from "react";
 import { postMessage } from "@/services/discussionHubServices";
 import { fetchTracks } from "@/services/academyServices";
+import { useToast } from "@/context/ToastContext";
 
 interface PostMessageModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onMessagePosted: (newMessage: any) => void;
+  // onMessagePosted: (newMessage: any) => void;
   academyId: any;
 }
 
 const PostMessageModal: React.FC<PostMessageModalProps> = ({
   isOpen,
   onClose,
-  onMessagePosted,
+  // onMessagePosted,
   academyId,
 }) => {
   const [messageTitle, setMessageTitle] = useState("");
@@ -29,6 +30,7 @@ const PostMessageModal: React.FC<PostMessageModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [loadingTracks, setTracksLoading] = useState(false);
   const [error, setError] = useState<string | null>("");
+  const { showToast } = useToast();
 
   const fetchTracksInAcademy = async () => {
     setTracksLoading(true);
@@ -66,9 +68,16 @@ const PostMessageModal: React.FC<PostMessageModalProps> = ({
       if (selectedTrack != "") {
         payload.trackId = selectedTrack;
       }
-      const newMessage = await postMessage(payload);
+      const response = await postMessage(payload);
+      if (response.status) {
+        showToast("Message posted successfully", "success");
+        setMessageTitle("");
+        setMessageBody("");
+        setSelectedTrack("");
+      }
+      // await postMessage(payload);
 
-      onMessagePosted(newMessage);
+      // onMessagePosted(newMessage);
       onClose();
     } catch (err: any) {
       setError(err.message);

@@ -5,7 +5,7 @@ import NotificationList from "@/components/feature/notifications/NotificationLis
 import NotificationSearchFilter from "@/components/feature/notifications/NotificationSearchFilter";
 import { fetchAllNotifications } from "@/services/notificationServices";
 import {
-  startSignalRConnection,
+  startSignalRConnectionForMessages,
   subscribeToNotifications,
 } from "@/services/signalRServices";
 
@@ -30,7 +30,7 @@ const NotificationPage = () => {
     fetchNotifications();
   }, []);
 
-  startSignalRConnection();
+  startSignalRConnectionForMessages();
   subscribeToNotifications((newNotification) => {
     setNotifications((prev) => [newNotification, ...prev]);
   });

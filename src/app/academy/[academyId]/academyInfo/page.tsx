@@ -20,6 +20,7 @@ const AcademyInfoPage = () => {
   const { academyId } = useParams();
   const [members, setMembers] = useState<Member[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [academyCode, setAcademyCode] = useState("");
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [roleModalOpen, setRoleModalOpen] = useState(false);
   const [removeModalOpen, setRemoveModalOpen] = useState(false);
@@ -29,6 +30,31 @@ const AcademyInfoPage = () => {
     { trackId: string; trackName: string }[]
   >([]);
   const { showToast } = useToast();
+
+  const fetchAcademyInfo = async () => {
+    setLoading(true);
+    try {
+      const response = await apiClient.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/Academies/${academyId}/academy-info`
+      );
+      const responseData = await response.data;
+      if (responseData.status) {
+        setAcademyCode(responseData.data.academyCode);
+      } else {
+        showToast(responseData.message, "error");
+      }
+    } catch (error) {
+      showToast("Failed to fetch Academy Info page. Please try again", "error");
+      setPageError("Failed to load Academy Info page. Please try again.");
+      console.error("Error fetching academy info", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAcademyInfo();
+  }, []);
 
   const fetchMembers = async () => {
     setLoading(true);
@@ -46,7 +72,7 @@ const AcademyInfoPage = () => {
       }
     } catch (error) {
       showToast("Failed to fetch members. Please try again", "error");
-      // setPageError("Failed to load Academy Info page. Please try again.");
+      setPageError("Failed to load Academy Info page. Please try again.");
       console.error("Error fetching members", error);
     }
   };
@@ -241,6 +267,7 @@ const AcademyInfoPage = () => {
 
   const handleReload = () => {
     setPageError("");
+    fetchAcademyInfo();
     fetchMembers();
     fetchTracks();
   };
@@ -265,7 +292,12 @@ const AcademyInfoPage = () => {
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
-      <h1 className="text-2xl font-bold text-gray-800 mb-4">Academy Members</h1>
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold text-gray-800 mb-4">
+          Academy Members
+        </h1>
+        <p>Academy Code: {academyCode ?? ""}</p>
+      </div>
       <div className="bg-white rounded-lg shadow-md p-4">
         {members.map((member) => (
           <div

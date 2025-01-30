@@ -39,6 +39,9 @@ export const postMessage = async (messageData: {
       `${process.env.NEXT_PUBLIC_API_URL}/messages/create`,
       messageData
     );
+    if (!response.data.status) {
+      throw new Error(response.data.message);
+    }
     return response.data;
   } catch (postMessageError) {
     throw new Error(

@@ -12,8 +12,9 @@ const PageLayout = ({ children }: { children: React.ReactNode }) => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [activeNav, setActiveNav] = useState("/");
   const [showSidebar, setShowSidebar] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const [notificationCount, setNotificationCount] = useState<number>(0);
+  const [username, setUsername] = useState("");
+  const [userEmail, setUserEmail] = useState("");
 
   const router = useRouter();
   const currentPath = usePathname();
@@ -26,9 +27,10 @@ const PageLayout = ({ children }: { children: React.ReactNode }) => {
     "/passwordReset",
   ];
 
-  // useEffect(() => {
-  //   setMounted(true);
-  // }, []);
+  useEffect(() => {
+    setUsername(localStorage.getItem("userName") ?? ""); // Default to empty string if null
+    setUserEmail(localStorage.getItem("userEmail") ?? "");
+  }, [currentPath]);
 
   // if (pagesWithoutSidebar.includes(currentPath)) {
   //   return <>{children}</>;
@@ -105,10 +107,8 @@ const PageLayout = ({ children }: { children: React.ReactNode }) => {
                 <div className="w-12 h-12 rounded-full bg-gray-500"></div>{" "}
                 {/* Placeholder Avatar */}
                 <div className="flex flex-col">
-                  <span>Username</span>
-                  <span className="text-xs text-gray-300">
-                    user@example.com
-                  </span>
+                  <span>{username}</span>
+                  <span className="text-xs text-gray-300">{userEmail}</span>
                 </div>
               </div>
             </div>

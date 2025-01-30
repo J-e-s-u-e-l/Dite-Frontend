@@ -3,8 +3,9 @@
 import React from "react";
 import { fetchMessages } from "@/services/discussionHubServices";
 import {
-  startSignalRConnection,
+  startSignalRConnectionForMessages,
   subscribeToMessages,
+  cancelSubscriptionToMessages,
 } from "@/services/signalRServices";
 import MessageCard from "@/components/feature/academy/MessageCard";
 import { useParams } from "next/navigation";
@@ -54,24 +55,31 @@ const DiscussionHubPage: React.FC = () => {
   //   });
   // }, []);
 
-  startSignalRConnection();
-  subscribeToMessages((newMessage) => {
-    setMessages((prev) => [newMessage, ...prev]);
-  });
+  // startSignalRConnectionForMessages();
+  // subscribeToMessages((newMessage) => {
+  //   setMessages((prev) => [newMessage, ...prev]);
+  // });
 
   useEffect(() => {
-    startSignalRConnection();
+    startSignalRConnectionForMessages();
+    subscribeToMessages((newMessage) => {
+      setMessages((prev) => [newMessage, ...prev]);
+    });
+
+    return () => {
+      cancelSubscriptionToMessages();
+    };
   }, []);
 
   const handleReload = () => {
     setPageError("");
     fetchInitialMessages(1);
-    startSignalRConnection();
+    startSignalRConnectionForMessages();
   };
 
-  const handleNewMessage = (newMessage: any) => {
-    setMessages((prev) => [newMessage, ...prev]);
-  };
+  // const handleNewMessage = (newMessage: any) => {
+  //   setMessages((prev) => [newMessage, ...prev]);
+  // };
 
   const handlePageChange = async (pageNumber: number) => {
     fetchInitialMessages(pageNumber);
@@ -120,7 +128,10 @@ const DiscussionHubPage: React.FC = () => {
       {/* Pagination Controls */}
       <div className="pagination mt-4 flex items-center justify-center space-x-4">
         <button
-          onClick={() => handlePageChange(pageNumber - 1)}
+          onClick={() => {
+            handlePageChange(pageNumber - 1);
+            setPageNumber(pageNumber - 1);
+          }}
           disabled={pageNumber <= 1}
           className={`px-4 py-2 rounded-md text-white font-medium ${
             pageNumber <= 1
@@ -134,7 +145,10 @@ const DiscussionHubPage: React.FC = () => {
           {pageNumber}
         </span>
         <button
-          onClick={() => handlePageChange(pageNumber + 1)}
+          onClick={() => {
+            handlePageChange(pageNumber + 1);
+            setPageNumber(pageNumber + 1);
+          }}
           className={`px-4 py-2 text-white rounded-md font-medium ${
             remainingMessagesCount <= 1
               ? "bg-gray-400 cursor-not-allowed"
@@ -149,7 +163,7 @@ const DiscussionHubPage: React.FC = () => {
       <PostMessageModal
         isOpen={isModalOpen}
         onClose={() => setModalOpen(false)}
-        onMessagePosted={handleNewMessage}
+        // onMessagePosted={handleNewMessage}
         academyId={academyId}
       />
     </div>
