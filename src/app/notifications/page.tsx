@@ -5,12 +5,14 @@ import NotificationList from "@/components/feature/notifications/NotificationLis
 import NotificationSearchFilter from "@/components/feature/notifications/NotificationSearchFilter";
 import { fetchAllNotifications } from "@/services/notificationServices";
 import {
-  startSignalRConnectionForMessages,
+  startSignalRConnectionForNotifications,
   subscribeToNotifications,
+  cleanupNotificationSubscription,
 } from "@/services/signalRServices";
 
 const NotificationPage = () => {
   const [notifications, setNotifications] = useState<any[]>([]);
+  const [newNotifications, setNewNotifications] = useState<any>();
   const [loading, setLoading] = useState(true);
   // const [filters, setFilters] = useState({ unread: false, search: "" });
 
@@ -30,10 +32,21 @@ const NotificationPage = () => {
     fetchNotifications();
   }, []);
 
-  startSignalRConnectionForMessages();
-  subscribeToNotifications((newNotification) => {
-    setNotifications((prev) => [newNotification, ...prev]);
-  });
+  useEffect(() => {
+    startSignalRConnectionForNotifications();
+    subscribeToNotifications((newNotification) => {
+      setNotifications((prev) => [newNotification, ...prev]);
+    });
+
+    return () => {
+      cleanupNotificationSubscription();
+    };
+  }, []);
+
+  // startSignalRConnectionForMessages();
+  // subscribeToNotifications((newNotification) => {
+  //   setNotifications((prev) => [newNotification, ...prev]);
+  // });
 
   // Filter notifications based on the selected filters
 
@@ -44,20 +57,22 @@ const NotificationPage = () => {
   // });
 
   return (
-    <div>
-      <h1>Notifications</h1>
+    <div className="max-w-4xl mx-auto p-6">
+      <h1 className="text-3xl font-semibold text-gray-900 mb-6">
+        Notifications
+      </h1>
+
+      {/* Uncomment when you add the search filter */}
       {/* <NotificationSearchFilter setFilters={setFilters} /> */}
+
       {loading ? (
-        <p>
-          <i>Loading notifications...</i>
-        </p>
+        <p className="text-gray-500 italic">Loading notifications...</p>
       ) : notifications.length === 0 ? (
-        <p>You don’t have any notifications at the moment.</p>
+        <p className="text-gray-500">
+          You don’t have any notifications at the moment.
+        </p>
       ) : (
-        <NotificationList
-          // notifications={filteredNotifications}
-          notifications
-        ></NotificationList>
+        <NotificationList notifications={notifications} />
       )}
     </div>
   );

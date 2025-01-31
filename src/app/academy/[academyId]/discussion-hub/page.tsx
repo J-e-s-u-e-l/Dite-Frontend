@@ -4,8 +4,8 @@ import React from "react";
 import { fetchMessages } from "@/services/discussionHubServices";
 import {
   startSignalRConnectionForMessages,
-  subscribeToMessages,
-  cancelSubscriptionToMessages,
+  subscribeToDiscussionHubMessages,
+  cleanupDiscussionHubSubscription,
 } from "@/services/signalRServices";
 import MessageCard from "@/components/feature/academy/MessageCard";
 import { useParams } from "next/navigation";
@@ -47,39 +47,24 @@ const DiscussionHubPage: React.FC = () => {
     fetchInitialMessages(1);
   }, [academyId]);
 
-  // Connect to SignalR hub and subscribe to messages
-  // useEffect(() => {
-  //   startSignalRConnection();
-  //   subscribeToMessages((newMessage) => {
-  //     setMessages((prev) => [newMessage, ...prev]);
-  //   });
-  // }, []);
-
-  // startSignalRConnectionForMessages();
-  // subscribeToMessages((newMessage) => {
-  //   setMessages((prev) => [newMessage, ...prev]);
-  // });
-
   useEffect(() => {
-    startSignalRConnectionForMessages();
-    subscribeToMessages((newMessage) => {
+    if (!academyId) return;
+
+    startSignalRConnectionForMessages(academyId);
+    subscribeToDiscussionHubMessages((newMessage) => {
       setMessages((prev) => [newMessage, ...prev]);
     });
 
     return () => {
-      cancelSubscriptionToMessages();
+      cleanupDiscussionHubSubscription(academyId);
     };
-  }, []);
+  }, [academyId]);
 
   const handleReload = () => {
     setPageError("");
     fetchInitialMessages(1);
-    startSignalRConnectionForMessages();
+    startSignalRConnectionForMessages(academyId);
   };
-
-  // const handleNewMessage = (newMessage: any) => {
-  //   setMessages((prev) => [newMessage, ...prev]);
-  // };
 
   const handlePageChange = async (pageNumber: number) => {
     fetchInitialMessages(pageNumber);

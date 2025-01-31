@@ -6,7 +6,8 @@ const NotificationList = ({ notifications }) => {
       {/* {notifications.map((notification) => ( */}
       {notifications.map((notification) => (
         <NotificationItem
-          key={notifications.id}
+          // key={notifications.id}
+          key={notification.notificationId}
           notification={notification}
         ></NotificationItem>
       ))}
