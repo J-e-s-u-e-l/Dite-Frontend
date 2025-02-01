@@ -58,7 +58,7 @@ export const markNotificationAsRead = async (notificationId: string) => {
 export const deleteNotification = async (notificationId: string) => {
   try {
     const response = await apiClient.delete(
-      `${process.env.NEXT_PUBLIC_API_URL}/notifications/${notificationId}`
+      `${process.env.NEXT_PUBLIC_API_URL}/notifications/${notificationId}/delete`
     );
     if (!response.data.status) {
       throw new Error(response.data.message);

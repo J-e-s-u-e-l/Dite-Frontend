@@ -32,16 +32,16 @@ const NotificationPage = () => {
     fetchNotifications();
   }, []);
 
-  useEffect(() => {
-    startSignalRConnectionForNotifications();
-    subscribeToNotifications((newNotification) => {
-      setNotifications((prev) => [newNotification, ...prev]);
-    });
+  // useEffect(() => {
+  //   startSignalRConnectionForNotifications();
+  //   subscribeToNotifications((newNotification) => {
+  //     setNotifications((prev) => [newNotification, ...prev]);
+  //   });
 
-    return () => {
-      cleanupNotificationSubscription();
-    };
-  }, []);
+  //   return () => {
+  //     cleanupNotificationSubscription();
+  //   };
+  // }, []);
 
   // startSignalRConnectionForMessages();
   // subscribeToNotifications((newNotification) => {
