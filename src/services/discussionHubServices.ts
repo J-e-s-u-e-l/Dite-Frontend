@@ -49,3 +49,41 @@ export const postMessage = async (messageData: {
     );
   }
 };
+
+export const fetchMessageDetails = async (messageId: string): Promise<any> => {
+  try {
+    const response = await apiClient.get(
+      `${process.env.NEXT_PUBLIC_API_URL}/messages/${messageId}`
+    );
+    if (!response.data.status) {
+      throw new Error(response.data.message);
+    }
+    return response.data;
+  } catch (fetchMessageDetailsError) {
+    throw new Error(
+      fetchMessageDetailsError.response?.data?.message ||
+        "Failed to fetch message details"
+    );
+  }
+};
+
+export const postResponseToMessage = async (
+  messageId: string,
+  responseMessage: string
+): Promise<any> => {
+  try {
+    const response = await apiClient.post(
+      `${process.env.NEXT_PUBLIC_API_URL}/messages/${messageId}/responses`,
+      responseMessage
+    );
+    if (!response.data.status) {
+      throw new Error(response.data.message);
+    }
+    return response.data;
+  } catch (fetchMessageDetailsError) {
+    throw new Error(
+      fetchMessageDetailsError.response?.data?.message ||
+        "Failed to fetch message details"
+    );
+  }
+};
