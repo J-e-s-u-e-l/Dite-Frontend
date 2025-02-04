@@ -68,12 +68,12 @@ export const fetchMessageDetails = async (messageId: string): Promise<any> => {
 };
 
 export const postResponseToMessage = async (
-  messageId: string,
+  parentId: string,
   responseMessage: string
 ): Promise<any> => {
   try {
     const response = await apiClient.post(
-      `${process.env.NEXT_PUBLIC_API_URL}/messages/${messageId}/responses`,
+      `${process.env.NEXT_PUBLIC_API_URL}/messages/${parentId}/responses`,
       responseMessage
     );
     if (!response.data.status) {
