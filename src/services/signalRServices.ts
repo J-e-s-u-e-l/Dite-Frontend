@@ -106,6 +106,65 @@ export const cleanupDiscussionHubSubscription = async (
   messageHubConnection.off("ReceiveMessage");
 };
 
+// MESSAGE REPLIES i.e responses to a message
+export const startSignalRConnectionForMessageResponses = async (
+  messageId: string | string[] | undefined
+) => {
+  await startHubConnection(messageHubConnection, "Message Replies");
+
+  // Wait for the connection to be in the "Connected" state before invoking the join method
+  if (messageHubConnection.state !== SignalR.HubConnectionState.Connected) {
+    messageHubConnection.onclose(async () => {
+      console.log("Reconnecting...");
+      await startHubConnection(messageHubConnection, "Message Hub");
+    });
+
+    await new Promise<void>((resolve) => {
+      const interval = setInterval(() => {
+        if (
+          messageHubConnection.state === SignalR.HubConnectionState.Connected
+        ) {
+          clearInterval(interval);
+          resolve();
+        }
+      }, 100);
+    });
+  }
+
+  if (messageId) {
+    try {
+      await messageHubConnection.invoke("JoinMessageGroup", messageId);
+      console.log(`Joined message group: ${messageId}`);
+    } catch (error) {
+      console.error("Failed to join message group", error);
+    }
+  }
+};
+
+export const subscribeToMessageReplies = (
+  callback: (messageReply: any) => void
+) => {
+  messageHubConnection.off("ReceiveReply");
+  messageHubConnection.on("ReceiveReply", (messageReply) => {
+    callback(messageReply);
+  });
+};
+
+export const cleanupMessageRepliesSubscription = async (
+  messageId: string | string[] | undefined
+) => {
+  if (!messageId) return;
+
+  console.log(`Cleaning up for message: ${messageId}`);
+
+  if (messageHubConnection.state === SignalR.HubConnectionState.Connected) {
+    await messageHubConnection.invoke("LeaveMessageGroup", messageId);
+    console.log(`Left message group: ${messageId}`);
+  }
+
+  messageHubConnection.off("ReceiveReply");
+};
+
 // NOTIFICATION SERVICES
 export const startSignalRConnectionForNotifications = async () => {
   await startHubConnection(notificationHubConnection, "Notification Hub");

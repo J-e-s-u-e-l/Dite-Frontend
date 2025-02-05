@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import {
@@ -5,11 +7,17 @@ import {
   postResponseToMessage,
 } from "@/services/discussionHubServices";
 import { useToast } from "@/context/ToastContext";
+import {
+  startSignalRConnectionForMessageResponses,
+  subscribeToMessageReplies,
+  cleanupMessageRepliesSubscription,
+} from "@/services/signalRServices";
 
 interface Response {
+  responseBody: string;
   responderUsername: string;
-  responderRole: string;
-  responseMessage: string;
+  responderRoleInAcademy: string;
+  sentAtAgo: string;
   sentAt: string;
 }
 
@@ -19,17 +27,17 @@ interface MessageDetails {
   senderUserName: string;
   senderRoleInAcademy: string;
   trackName?: string;
-  sentAt: string;
+  sentAtAgo: string;
   totalNumberOfResponses: number;
-  responses: Response[];
 }
 
-const MessageDetailsPage = () => {
+const MessageDetailsPage: React.FC = () => {
   const { messageId } = useParams();
 
-  const [messageDetails, setMessageDetails] = useState<MessageDetails | null>(
-    null
-  );
+  const [messageDetails, setMessageDetails] = useState<MessageDetails[]>();
+  const [allMessageResponses, setAllMessageResponses] = useState<
+    Response[] | null
+  >(null);
   const [newResponse, setNewResponse] = useState("");
   const [loading, setLoading] = useState(true);
   const [pageError, setPageError] = useState("");
@@ -45,14 +53,29 @@ const MessageDetailsPage = () => {
     try {
       setLoading(true);
       const response = await fetchMessageDetails(messageId);
-      setMessageDetails(response.data);
-      setLoading(false);
+      setMessageDetails(response.data.message[0]);
+      setAllMessageResponses(response.data.responses);
     } catch (error) {
       console.error(error);
       setPageError("Failed to load message details. Please try again.");
       setLoading(false);
+    } finally {
+      setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (!messageId) return;
+
+    startSignalRConnectionForMessageResponses(messageId);
+    subscribeToMessageReplies((newResponse) => {
+      setAllMessageResponses((prev) => [newResponse, ...prev]);
+    });
+
+    return () => {
+      cleanupMessageRepliesSubscription(messageId);
+    };
+  }, [messageId]);
 
   const handleResponseSubmit = async () => {
     if (!newResponse.trim()) return;
@@ -94,7 +117,7 @@ const MessageDetailsPage = () => {
     );
   }
 
-  if (!messageDetails) return <p>Loading messages...</p>;
+  if (loading) return <p>Loading message details...</p>;
 
   return (
     <div className="max-w-2x1 mx-auto p-4 bg-white rounded shadow-md">
@@ -104,11 +127,10 @@ const MessageDetailsPage = () => {
       <div className="text-sm text-gray-500 mt-4">
         <p>Track: {messageDetails.trackName || "General"}</p>
         <p>
-          By: {messageDetails.senderUserName} (
-          <i>{messageDetails.senderRoleInAcademy}</i>)
+          By: {messageDetails.senderUserName}
+          <i>{messageDetails.senderRoleInAcademy}</i>
         </p>
-        <p>Sent at: {messageDetails.sentAt}</p>
-        <p>Total Responses: {messageDetails.totalNumberOfResponses}</p>
+        <p>Sent at: {messageDetails.sentAtAgo}</p>
       </div>
 
       {/* <div className="mt-6">
@@ -132,18 +154,25 @@ const MessageDetailsPage = () => {
 
       <div className="mt-6">
         <h3 className="text-lg font-semibold">Responses:</h3>
-        {messageDetails.responses.length === 0 ? (
+        {allMessageResponses && allMessageResponses.length === 0 ? (
           <p className="text-gray-500">No responses yet.</p>
         ) : (
-          messageDetails.responses.map((response, index) => (
-            <div key={index} className="border-t mt-4 pt-2">
-              <p className="font-medium">
-                {response.responderUsername} (<i>{response.responderRole}</i>)
-              </p>
-              <p className="text-gray-700">{response.responseMessage}</p>
-              <p className="text-xs text-gray-500">{response.sentAt}</p>
-            </div>
-          ))
+          allMessageResponses &&
+          [...allMessageResponses]
+            .sort(
+              (a, b) =>
+                new Date(b.sentAt).getTime() - new Date(a.sentAt).getTime()
+            )
+            .map((response, index) => (
+              <div key={index} className="border-t mt-4 pt-2">
+                <p className="font-medium">
+                  {response.responderUsername}{" "}
+                  <i>{response.responderRoleInAcademy}</i>
+                </p>
+                <p className="text-gray-700">{response.responseBody}</p>
+                <p className="text-xs text-gray-500">{response.sentAtAgo}</p>
+              </div>
+            ))
         )}
       </div>
     </div>

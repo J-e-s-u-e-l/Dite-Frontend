@@ -72,9 +72,13 @@ export const postResponseToMessage = async (
   responseMessage: string
 ): Promise<any> => {
   try {
+    const payload = {
+      parentId,
+      responseMessage,
+    };
     const response = await apiClient.post(
-      `${process.env.NEXT_PUBLIC_API_URL}/messages/${parentId}/responses`,
-      responseMessage
+      `${process.env.NEXT_PUBLIC_API_URL}/messages/responses`,
+      payload
     );
     if (!response.data.status) {
       throw new Error(response.data.message);

@@ -9,9 +9,11 @@ interface MessageCardProps {
     senderUserName: string;
     senderRoleInAcademy: string;
     trackName?: string;
+    sentAtAgo: string;
     sentAt: string;
-    totalResponses: number;
+    totalNumberOfResponses: number;
   };
+  academyId: string | string[] | undefined;
 }
 
 const MAX_MESSAGE_LENGTH = 70;
@@ -19,16 +21,18 @@ const truncateText = (text: string, maxLength: number) => {
   return text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
 };
 
-const MessageCard: React.FC<MessageCardProps> = ({ message }) => {
+const MessageCard: React.FC<MessageCardProps> = ({ message, academyId }) => {
   const router = useRouter();
 
   const handleClick = () => {
-    router.push(`/messages/${message.messageId}`);
+    router.push(
+      `/academy/${academyId}/discussion-hub/messages/${message.messageId}/`
+    );
   };
 
   return (
     <div
-      className="border p-4 rounded-md shadow-md mb-4 bg-white"
+      className="border p-4 rounded-md shadow-md mb-4 bg-white cursor-pointer"
       onClick={handleClick}
     >
       <h3 className="text-xl font-semibold text-gray-900">
@@ -51,14 +55,14 @@ const MessageCard: React.FC<MessageCardProps> = ({ message }) => {
         <span>
           • By:{" "}
           <span className="font-medium text-gray-900">
-            {message.senderUserName} (<i>{message.senderRoleInAcademy}</i>)
+            {message.senderUserName} <i>{message.senderRoleInAcademy}</i>
           </span>
         </span>
-        <span>• {message.sentAt}</span>
+        <span>• {message.sentAtAgo}</span>
         <span className="ml-auto font-semibold text-blue-600">
-          {message.totalResponses === 1
-            ? `${message.totalResponses} Response`
-            : `${message.totalResponses} Responses`}
+          {message.totalNumberOfResponses === 1
+            ? `${message.totalNumberOfResponses} Response`
+            : `${message.totalNumberOfResponses} Responses`}
         </span>
       </div>
     </div>

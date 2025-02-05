@@ -96,10 +96,22 @@ const DiscussionHubPage: React.FC = () => {
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">Discussion Hub</h2>
       </div>
-      {messages && messages.length > 0 ? (
+      {/* {messages && messages.length > 0 ? (
         messages.map((message, index) => (
           <MessageCard key={index} message={message} />
         ))
+      ) : (
+        <div>No messages yet. Start the discussion!</div>
+      )} */}
+      {messages && messages.length > 0 ? (
+        [...messages]
+          .sort(
+            (a, b) =>
+              new Date(b.sentAt).getTime() - new Date(a.sentAt).getTime()
+          )
+          .map((message, index) => (
+            <MessageCard key={index} message={message} academyId={academyId} />
+          ))
       ) : (
         <div>No messages yet. Start the discussion!</div>
       )}

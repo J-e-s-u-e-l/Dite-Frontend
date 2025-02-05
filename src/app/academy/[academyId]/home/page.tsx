@@ -15,7 +15,7 @@ const AcademyHomePage = () => {
   const { showToast: showToast } = useToast();
 
   const handleRedirectToResourceRepository = () => {
-    router.push(`/academy/${academyId}/resources`);
+    router.push(`/academy/${academyId}/resources-repo`);
   };
 
   const handleRedirectToDiscussionHub = () => {

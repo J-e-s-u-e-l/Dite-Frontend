@@ -1,47 +1,71 @@
 "use client";
 
-import React from "react";
-import { useRouter } from "next/router";
+import React, { useEffect, useState } from "react";
+import UploadResourceForm from "@/components/feature/resource-repository/UploadResourceForm";
+import ResourceList from "@/components/feature/resource-repository/ResourceList";
 
-const AcademyHomePage = () => {
-  const router = useRouter();
-  const { academyId } = router.query;
+interface Resource {
+  resourceId: string;
+  resourceName: string;
+  resourceType: "image" | "document";
+  resourceUrl: string;
+}
 
-  const handleRedirectToResourceRepository = () => {
-    router.push(`/academy/${academyId}/resources`);
+const ResourceRepositoryPage: React.FC = () => {
+  const [resources, setResources] = useState<Resource[]>([]);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const fetchResources = async () => {
+      const fakeData: Resource[] = [
+        {
+          resourceId: "1",
+          resourceName: "Intro to React.pdf",
+          resourceType: "document",
+          resourceUrl: "/docs/intro.pdf",
+        },
+        {
+          resourceId: "2",
+          resourceName: "Class Diagram.png",
+          resourceType: "image",
+          resourceUrl: "/images/class-diagram.png",
+        },
+      ];
+      setResources(fakeData);
+      setIsAdmin(true);
+    };
+
+    fetchResources();
+  }, []);
+
+  const handleUpload = (formData: FormData) => {
+    const file = formData.get("file");
+    if (file instanceof File) {
+      const newResource: Resource = {
+        resourceId: Date.now().toString(),
+        resourceName: file.name,
+        resourceType: file.type.includes("image") ? "image" : "document",
+        resourceUrl: URL.createObjectURL(file),
+      };
+      setResources((prev) => [...prev, newResource]);
+    }
   };
 
-  const handleRedirectToDiscussionHub = () => {
-    router.push(`/academy/${academyId}/discussion-hub`);
+  const handleDelete = (id: string) => {
+    setResources((prev) => prev.filter((res) => res.resourceId !== id));
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4">
-      <header className="text-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">
-          Welcome to {academyId} Academy
-        </h1>
-      </header>
-
-      <div className="max-w-4xl mx-auto">
-        <section>
-          <button
-            onClick={handleRedirectToResourceRepository}
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg mb-4 hover:bg-blue-700"
-          >
-            Go to Resource Repository
-          </button>
-
-          <button
-            onClick={handleRedirectToDiscussionHub}
-            className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700"
-          >
-            Go to Discussion Hub
-          </button>
-        </section>
-      </div>
+    <div className="container mx-auto px-4 py-6">
+      <h1 className="text-2xl font-bold mb-4">Resource Repository</h1>
+      {isAdmin && <UploadResourceForm onUpload={handleUpload} />}
+      <ResourceList
+        resources={resources}
+        isAdmin={isAdmin}
+        onDelete={handleDelete}
+      />
     </div>
   );
 };
 
-export default AcademyHomePage;
+export default ResourceRepositoryPage;
