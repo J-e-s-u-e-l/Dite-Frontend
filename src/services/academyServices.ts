@@ -1,6 +1,5 @@
 import apiClient from "@/utils/apiClient";
 
-// export const fetchTracks = async (academyId: string): Promise<any[]> => {
 export const fetchTracks = async (academyId: string) => {
   try {
     const response = await apiClient.get(

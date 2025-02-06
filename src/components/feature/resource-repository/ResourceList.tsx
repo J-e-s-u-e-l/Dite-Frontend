@@ -2,10 +2,9 @@ import React from "react";
 import ResourceCard from "@/components/feature/resource-repository/ResourceCard";
 
 interface Resource {
-  resourceId: string;
+  resourceId: string | null;
   resourceName: string;
   resourceType: "image" | "document";
-  resourceUrl: string;
 }
 
 interface ResourceListProps {
