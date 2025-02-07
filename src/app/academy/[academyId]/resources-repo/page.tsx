@@ -25,6 +25,7 @@ const ResourceRepositoryPage: React.FC = () => {
   const { academyId } = useParams();
   const [loading, setLoading] = useState(true);
   const [pageError, setPageError] = useState("");
+  // const [deleteResourceModal, setDeleteResourceModal] = useState(false);
 
   // useEffect(() => {
   //   const fetchResources = async () => {

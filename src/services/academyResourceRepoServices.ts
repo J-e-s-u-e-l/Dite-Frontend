@@ -6,14 +6,20 @@ export const uploadResource = async (
   academyId: string | string[] | undefined
 ) => {
   try {
-    const payload = {
-      academyId,
-      newResource,
-      file,
-    };
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("academyId", academyId as string);
+    formData.append("resourceName", newResource.resourceName);
+    formData.append("resourceType", newResource.resourceType);
+
     const response = await apiClient.post(
       `${process.env.NEXT_PUBLIC_API_URL}/Academies/uploadResource`,
-      payload
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
     );
     if (!response.data.status) {
       throw new Error(response.data.message);
@@ -65,12 +71,23 @@ export const downloadResource = async (
 ) => {
   try {
     const response = await apiClient.get(
-      `${process.env.NEXT_PUBLIC_API_URL}/Academies/${resourceId}/download`
+      `${process.env.NEXT_PUBLIC_API_URL}/Academies/${resourceId}/download`,
+      { responseType: "blob" } // Important for binary data
     );
-    if (!response.data.status) {
-      throw new Error(response.data.message);
-    }
-    return response.data;
+    // const response = await fetch(`/api/${resourceId}/download`, {
+    //   method: "GET",
+    // });
+
+    // if (!response.data.status) {
+    //   throw new Error(response.data.message);
+    // }
+
+    // if (!response.data.status) {
+    //   throw new Error(response.data.message);
+    // }
+
+    // return response.data;
+    return response;
   } catch (error) {
     throw new Error(
       error.response?.data?.message || "Failed to download resource file."
