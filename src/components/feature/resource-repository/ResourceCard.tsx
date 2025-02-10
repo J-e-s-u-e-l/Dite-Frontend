@@ -20,47 +20,6 @@ const ResourceCard: React.FC<ResourceCardProps> = ({
   onDeleteResource,
 }) => {
   const [deleteResourceModal, setDeleteResourceModal] = useState(false);
-  // const [loading, setLoading] = useState(true);
-
-  // const handleDownload = async (id) => {
-  //   const response = await fetch(`/api/resource/${id}`);
-  //   const blob = await response.blob();
-  //   const url = window.URL.createObjectURL(blob);
-  //   const link = document.createElement("a");
-  //   link.href = url;
-  //   link.setAttribute("download", "file.pdf"); // Use the correct file name
-  //   document.body.appendChild(link);
-  //   link.click();
-  // };
-  // const handleDownload = async (resourceId: string) => {
-  //   try {
-  //     const response = await downloadResource(resourceId);
-
-  //     // public class DownloadResourceInAcademyRepoResponse
-  //     // {
-  //     //     public Stream Resource { get; set; }
-  //     // }
-
-  //     // if (response.status) {
-  //     //   const file = new File([response.data], resource.resourceName, {
-  //     //     type: response.headers.get("content-type"),
-  //     //   });
-  //     //   const fileURL = URL.createObjectURL(file);
-  //     //   window.open(fileURL);
-  //     // }
-
-  //     // if (response.status) {
-  //     // const file = new File([response.data], resource.resourceName, {
-  //     const file = new File([response], resource.resourceName, {
-  //       type: response.headers.get("content-type"),
-  //     });
-  //     const fileURL = URL.createObjectURL(file);
-  //     window.open(fileURL);
-  //     // }
-  //   } catch (error) {
-  //     console.error("Failed to download resource:", error);
-  //   }
-  // };
 
   const handleDownload = async (resourceId: string) => {
     try {
@@ -92,32 +51,6 @@ const ResourceCard: React.FC<ResourceCardProps> = ({
       console.error("Error downloading file:", error);
     }
   };
-
-  // const handleDelete = async (resourceId: string) => {
-  //   try {
-  //     setLoading(true);
-
-  //     const response = await deleteResource(resourceId);
-
-  //     if (response.status) {
-  //       setResources((prev) =>
-  //         prev.filter((res) => res.resourceId !== resourceId)
-  //       );
-  //       showToast(response.message, "success");
-  //     } else {
-  //       showToast(response.message, "error");
-  //     }
-  //   } catch (error) {
-  //     showToast("Failed to delete resource. Please try again.", "error");
-  //     console.error(error);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
-  // if (loading) {
-  //   return <Loader />;
-  // }
 
   return (
     <div className="border rounded-md p-4 shadow-md bg-white flex justify-between items-center">

@@ -25,30 +25,6 @@ const ResourceRepositoryPage: React.FC = () => {
   const { academyId } = useParams();
   const [loading, setLoading] = useState(true);
   const [pageError, setPageError] = useState("");
-  // const [deleteResourceModal, setDeleteResourceModal] = useState(false);
-
-  // useEffect(() => {
-  //   const fetchResources = async () => {
-  //     const fakeData: Resource[] = [
-  //       {
-  //         resourceId: "1",
-  //         resourceName: "Intro to React.pdf",
-  //         resourceType: "document",
-  //         resourceUrl: "/docs/intro.pdf",
-  //       },
-  //       {
-  //         resourceId: "2",
-  //         resourceName: "Class Diagram.png",
-  //         resourceType: "image",
-  //         resourceUrl: "/images/class-diagram.png",
-  //       },
-  //     ];
-  //     setResources(fakeData);
-  //     setIsAdmin(true);
-  //   };
-
-  //   fetchResources();
-  // }, []);
 
   const fetchResourcesFromAcademyRepo = async () => {
     try {

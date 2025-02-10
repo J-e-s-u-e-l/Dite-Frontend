@@ -1,32 +1,77 @@
 import { useState } from "react";
+import { addNewTask, updateTask } from "@/services/task-managerServices";
+import Loader from "@/components/common/Loader";
+import { useToast } from "@/context/ToastContext";
+import { Task } from "@/types/interfaces";
 
 interface AddEditTaskModalProps {
   onClose: () => void;
+  onTaskSaved: (newTask: Task) => void;
   mode: "add" | "edit";
-  existingTrack?: {
-    title: string;
-    description: string;
-    dueDate: string;
-    courseTag: string;
+  existingTask?: {
+    taskId: string | null;
+    taskTitle: string;
+    taskDescription: string;
+    taskDueDate: string;
+    taskCourseTag: string;
   };
 }
 
 const AddEditTaskModal: React.FC<AddEditTaskModalProps> = ({
   onClose,
   mode,
-  existingTrack,
+  existingTask: existingTask,
+  onTaskSaved,
 }) => {
-  const [title, setTitle] = useState(existingTrack?.title || "");
-  const [description, setDescription] = useState(
-    existingTrack?.description || ""
-  );
-  const [dueDate, setDueDate] = useState(existingTrack?.dueDate || "");
-  const [courseTag, setCourseTag] = useState(existingTrack?.courseTag || "");
+  const [loading, setLoading] = useState(false);
+  const { showToast } = useToast();
+  const [taskData, setTaskData] = useState({
+    taskId: existingTask?.taskId || "",
+    taskTitle: existingTask?.taskTitle || "",
+    taskDescription: existingTask?.taskDescription || "",
+    taskDueDate: existingTask?.taskDueDate || "",
+    taskCourseTag: existingTask?.taskCourseTag || "",
+  });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onClose();
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setTaskData((prev) => ({ ...prev, [name]: value }));
   };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    try {
+      e.preventDefault();
+      setLoading(true);
+
+      let response;
+
+      if (mode === "edit") {
+        response = await updateTask(taskData);
+        if (response.status) {
+          showToast("Task added successfully", "success");
+        }
+      } else if (mode === "add") {
+        response = await addNewTask(taskData);
+        if (response.status) {
+          showToast("Task updated successfully", "success");
+        }
+
+        onTaskSaved(response.data);
+      }
+      onClose();
+    } catch (error) {
+      console.error("Failed to save task", error);
+      showToast("Failed to save task. Please try again", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return <Loader />;
+  }
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
@@ -38,28 +83,28 @@ const AddEditTaskModal: React.FC<AddEditTaskModalProps> = ({
           <input
             type="text"
             placeholder="Task Title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            value={taskData.taskTitle}
+            onChange={handleChange}
             className="w-full border rounded-md p-2"
             required
           />
           <textarea
             placeholder="Description (optional)"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            value={taskData.taskDescription}
+            onChange={handleChange}
             className="w-full border rounded-md p-2"
           />
           <input
             type="date"
-            value={dueDate}
-            onChange={(e) => setDueDate(e.target.value)}
+            value={taskData.taskDueDate}
+            onChange={handleChange}
             className="w-full border rounded-md p-2"
           />
           <input
             type="text"
             placeholder="Course Tag (optional)"
-            value={courseTag}
-            onChange={(e) => setCourseTag(e.target.value)}
+            value={taskData.taskCourseTag}
+            onChange={handleChange}
             className="w-full border rounded-md p-2"
           />
           <button

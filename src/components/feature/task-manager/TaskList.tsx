@@ -1,32 +1,19 @@
+// "use client";
+
 import TaskCard from "@/components/feature/task-manager/TaskCard";
+import { Task } from "@/types/interfaces";
 
-const mockTasks = [
-  {
-    id: "1",
-    title: "Complete Assignment 1",
-    description: "Work on the data structures assignment.",
-    dueDate: "2025-02-15",
-    courseTag: "Computer Science",
-    isCompleted: false,
-  },
-  {
-    id: "2",
-    title: "Prepare for Networking Quiz",
-    description: "Revise TCP/IP and OSI models.",
-    dueDate: "2025-02-18",
-    courseTag: "Networking",
-    isCompleted: true,
-  },
-];
+interface TaskListProps {
+  tasks: Task[];
+  onTaskUpdated: (updatedTask: Task) => void; // Callback to notify parent component about task updates. This could be a task update event or a separate action. This function should be passed down to TaskCard.  // Props are destructured for better readability.  // TaskList is a functional component that renders a list of TaskCard components.  // Tasks prop is an array of Task objects, and onTaskUpdated prop is a callback function to notify parent component about task
+}
 
-const TaskList = () => {
+const TaskList: React.FC<TaskListProps> = ({ tasks, onTaskUpdated }) => {
   return (
     <div className="mt-6 space-y-4">
-      {mockTasks.length === 0 ? (
-        <p className="text-gray-500 text-center">No tasks added yet.</p>
-      ) : (
-        mockTasks.map((task) => <TaskCard key={task.id} task={task} />)
-      )}
+      {tasks.map((task) => (
+        <TaskCard key={task.taskId} task={task} onTaskUpdated={onTaskUpdated} />
+      ))}
     </div>
   );
 };

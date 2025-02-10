@@ -41,16 +41,6 @@ const CreateAcademy = () => {
     };
 
     try {
-      // const response = await fetch(
-      //   `${process.env.NEXT_PUBLIC_API_URL}/Academies/create-academy`,
-      //   {
-      //     method: "POST",
-      //     headers: {
-      //       "Content-Type": "application/json",
-      //     },
-      //     body: JSON.stringify(payload),
-      //   }
-      // );
       const response = await apiClient.post(
         `${process.env.NEXT_PUBLIC_API_URL}/Academies/create-academy`,
         payload
@@ -60,13 +50,11 @@ const CreateAcademy = () => {
 
       if (data.status) {
         showToast(data.message, "success");
-        // Reset form
         setAcademyName("");
         setTracks([]);
         setDescription("");
         setError("");
 
-        // Redirect to academy home page
         router.push(`/academy/${data.data.academyId}/home`);
       } else {
         showToast(data.message, "error");
