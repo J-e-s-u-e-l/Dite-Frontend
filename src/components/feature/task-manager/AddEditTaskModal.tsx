@@ -14,6 +14,7 @@ interface AddEditTaskModalProps {
     taskDescription: string;
     taskDueDate: string;
     taskCourseTag: string;
+    taskStatus: string;
   };
 }
 
@@ -31,6 +32,7 @@ const AddEditTaskModal: React.FC<AddEditTaskModalProps> = ({
     taskDescription: existingTask?.taskDescription || "",
     taskDueDate: existingTask?.taskDueDate || "",
     taskCourseTag: existingTask?.taskCourseTag || "",
+    taskStatus: existingTask?.taskStatus || "",
   });
 
   const handleChange = (
@@ -50,10 +52,16 @@ const AddEditTaskModal: React.FC<AddEditTaskModalProps> = ({
       if (mode === "edit") {
         response = await updateTask(taskData);
         if (response.status) {
-          showToast("Task added successfully", "success");
+          showToast(response.message, "success");
         }
       } else if (mode === "add") {
-        response = await addNewTask(taskData);
+        const payload = {
+          taskTitle: taskData.taskTitle,
+          taskDescription: taskData.taskDescription,
+          taskDueDate: taskData.taskDueDate,
+          taskCourseTag: taskData.taskCourseTag,
+        };
+        response = await addNewTask(payload);
         if (response.status) {
           showToast("Task updated successfully", "success");
         }
@@ -82,26 +90,34 @@ const AddEditTaskModal: React.FC<AddEditTaskModalProps> = ({
         <form onSubmit={handleSubmit} className="space-y-3">
           <input
             type="text"
+            name="taskTitle"
             placeholder="Task Title"
             value={taskData.taskTitle}
             onChange={handleChange}
             className="w-full border rounded-md p-2"
             required
           />
+
           <textarea
+            name="taskDescription"
             placeholder="Description (optional)"
             value={taskData.taskDescription}
             onChange={handleChange}
             className="w-full border rounded-md p-2"
           />
+
           <input
             type="date"
+            name="taskDueDate"
             value={taskData.taskDueDate}
             onChange={handleChange}
             className="w-full border rounded-md p-2"
+            required
           />
+
           <input
             type="text"
+            name="taskCourseTag"
             placeholder="Course Tag (optional)"
             value={taskData.taskCourseTag}
             onChange={handleChange}

@@ -1,16 +1,46 @@
-import { useState } from "react";
+"use client";
+
+import { useState, useEffect } from "react";
 import AddEditTaskModal from "@/components/feature/task-manager/AddEditTaskModal";
 import ConfirmationModal from "@/components/feature/task-manager/ConfirmationModal";
 import { Task } from "@/types/interfaces";
+import {
+  fetchTaskStatuses,
+  updateTaskStatus,
+} from "@/services/task-managerServices";
 
 interface TaskProps {
   task: Task;
   onTaskUpdated: (updatedTask: Task) => void;
 }
 
-const TaskCard: React.FC<TaskProps> = ({ task, updatedTask }) => {
+// const TaskCard: React.FC<TaskProps> = ({ task, onTaskUpdated }) => {
+const TaskCard: React.FC<TaskProps> = ({ task, onTaskUpdated }) => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [statusOptions, setStatusOptions] = useState<string[]>([]);
+
+  useEffect(() => {
+    const loadStatuses = async () => {
+      try {
+        const response = await fetchTaskStatuses();
+        setStatusOptions(response.data);
+      } catch (error) {
+        console.error("Failed to load statuses:", error);
+      }
+    };
+    loadStatuses();
+  }, []);
+
+  const handleStatusChange = async (newStatus: string) => {
+    try {
+      const updatedTask = { ...task, taskStatus: newStatus };
+      await updateTaskStatus(updatedTask);
+      onTaskUpdated(updatedTask);
+    } catch (error) {
+      console.error("Failed to update status:", error);
+    }
+  };
 
   return (
     <div className="border p-4 rounded-md shadow-md bg-white flex justify-between items-start">
@@ -18,26 +48,37 @@ const TaskCard: React.FC<TaskProps> = ({ task, updatedTask }) => {
         <h3 className="text-lg font-semibold">{task.taskTitle}</h3>
         <p className="text-gray-600">{task.taskDescription}</p>
         <p className="text-sm text-gray-500">Due: {task.taskDueDate}</p>
-        {task.taskCourseTag && (
-          <span className="inline-block bg-blue-100 text-blue-700 px-2 py-1 rounded mt-1 text-xs">
-            {task.taskCourseTag}
-          </span>
-        )}
+
+        <div className="mt-2 text-sm font-semibold">
+          Status: <span className="text-blue-600">{task.taskStatus}</span>
+        </div>
       </div>
 
-      <div className="flex space-x-2">
+      <div className="flex flex-col items-end space-y-2">
         <button
-          className="text-green-500"
           onClick={() => setIsEditModalOpen(true)}
+          className="text-green-500"
         >
           Edit
         </button>
         <button
-          className="text-red-500"
           onClick={() => setIsConfirmModalOpen(true)}
+          className="text-red-500"
         >
           Delete
         </button>
+
+        <select
+          value={task.taskStatus}
+          onChange={(e) => handleStatusChange(e.target.value)}
+          className="border rounded-md px-2 py-1 text-sm mt-1"
+        >
+          {statusOptions.map((status) => (
+            <option key={status} value={status}>
+              {status}
+            </option>
+          ))}
+        </select>
       </div>
 
       {isEditModalOpen && (
@@ -45,7 +86,7 @@ const TaskCard: React.FC<TaskProps> = ({ task, updatedTask }) => {
           onClose={() => setIsEditModalOpen(false)}
           mode="edit"
           existingTask={task}
-          onTaskSaved={updatedTask}
+          onTaskSaved={onTaskUpdated}
         />
       )}
 

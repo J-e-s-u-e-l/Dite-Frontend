@@ -14,21 +14,23 @@ const NotificationPage = () => {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [newNotifications, setNewNotifications] = useState<any>();
   const [loading, setLoading] = useState(true);
+  const [pageError, setPageError] = useState("");
   // const [filters, setFilters] = useState({ unread: false, search: "" });
 
-  useEffect(() => {
-    const fetchNotifications = async () => {
-      try {
-        setLoading(true);
-        const response = await fetchAllNotifications();
-        setNotifications(response.data);
-      } catch (error) {
-        console.error("Error fetching notifications", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchNotifications = async () => {
+    try {
+      setLoading(true);
+      const response = await fetchAllNotifications();
+      setNotifications(response.data);
+    } catch (error) {
+      setPageError("Failed to load notifications. Please try again.");
+      console.error("Error fetching notifications", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchNotifications();
   }, []);
 
@@ -55,6 +57,20 @@ const NotificationPage = () => {
   //   const matchesReadStatus = filters.unread ? !notification.read : true;
   //   return matchesSearch && matchesReadStatus;
   // });
+
+  if (pageError) {
+    return (
+      <div className="text-center mt-10">
+        <p className="text-red-500">{pageError}</p>
+        <button
+          onClick={fetchNotifications}
+          className="mt-4 p-2 rounded bg-yellow-400 hover:bg-yellow-500 focus:outline-none"
+        >
+          Try again
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto p-6">
