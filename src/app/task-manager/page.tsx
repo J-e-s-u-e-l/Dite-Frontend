@@ -13,31 +13,31 @@ import {
 
 const TaskManagerPage = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [statusOptions, setStatusOptions] = useState<string[]>([]); // Dynamic Status Options
+  const [statusOptions, setStatusOptions] = useState<string[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [pageError, setPageError] = useState("");
 
-  useEffect(() => {
-    const initializeData = async () => {
-      try {
-        setLoading(true);
-        const [tasksResponse, statusResponse] = await Promise.all([
-          fetchAllTasks(),
-          fetchTaskStatuses(),
-        ]);
-        setTasks(tasksResponse.data);
-        setStatusOptions(statusResponse.data);
-      } catch (err) {
-        console.error("Error loading data:", err);
-        setPageError("Failed to load tasks or statuses.");
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchAllTasksFromServer = async () => {
+    try {
+      setLoading(true);
+      const [tasksResponse, statusResponse] = await Promise.all([
+        fetchAllTasks(),
+        fetchTaskStatuses(),
+      ]);
 
-    initializeData();
+      setTasks(tasksResponse.data.tasks);
+      setStatusOptions(statusResponse.data.taskStatuses);
+    } catch (err) {
+      console.error("Error loading data:", err);
+      setPageError("Failed to load tasks or statuses.");
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    fetchAllTasksFromServer();
   }, []);
 
   const handleStatusFilterChange = (
@@ -50,6 +50,24 @@ const TaskManagerPage = () => {
     statusFilter === "all"
       ? tasks
       : tasks.filter((task) => task.taskStatus === statusFilter);
+
+  if (loading) {
+    return <Loader />;
+  }
+
+  if (pageError) {
+    return (
+      <div className="text-center mt-10">
+        <p className="text-red-500">{pageError}</p>
+        <button
+          onClick={fetchAllTasksFromServer}
+          className="mt-4 p-2 rounded bg-yellow-400 hover:bg-yellow-500 focus:outline-none"
+        >
+          Try again
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">

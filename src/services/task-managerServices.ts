@@ -53,11 +53,16 @@ export const addNewTask = async (newTask: Task) => {
   }
 };
 
-export const updateTask = async (editedTask: Task) => {
+// export const updateTask = async (editedTask: Task) => {
+export const updateTask = async (
+  taskId: string,
+  updatedFields: Partial<Task>
+) => {
   try {
-    const response = await apiClient.put(
+    const payload = { taskId, ...updatedFields };
+    const response = await apiClient.patch(
       `${process.env.NEXT_PUBLIC_API_URL}/TaskManager/update-task`,
-      editedTask
+      payload
     );
 
     if (!response.data.status) {
@@ -70,11 +75,16 @@ export const updateTask = async (editedTask: Task) => {
   }
 };
 
-export const updateTaskStatus = async (editedTask: Task) => {
+// export const updateTaskStatus = async (editedTask: Task) => {
+export const updateTaskStatus = async (
+  taskId: string,
+  statusUpdate: Partial<Task>
+) => {
   try {
+    const payload = { taskId, ...statusUpdate };
     const response = await apiClient.patch(
       `${process.env.NEXT_PUBLIC_API_URL}/TaskManager/update-task-status`,
-      editedTask
+      payload
     );
 
     if (!response.data.status) {
@@ -86,5 +96,21 @@ export const updateTaskStatus = async (editedTask: Task) => {
     throw new Error(
       error.response?.data?.message || "failed to update task status"
     );
+  }
+};
+
+export const deleteTask = async (taskId: string) => {
+  try {
+    const response = await apiClient.delete(
+      `${process.env.NEXT_PUBLIC_API_URL}/TaskManager/${taskId}`
+    );
+
+    if (!response.data.status) {
+      throw new Error(response.data.message);
+    }
+
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || "failed to delete task");
   }
 };

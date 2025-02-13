@@ -9,7 +9,8 @@ interface AddEditTaskModalProps {
   onTaskSaved: (newTask: Task) => void;
   mode: "add" | "edit";
   existingTask?: {
-    taskId: string | null;
+    // taskId: string | null;
+    taskId?: string | null;
     taskTitle: string;
     taskDescription: string;
     taskDueDate: string;
@@ -50,7 +51,28 @@ const AddEditTaskModal: React.FC<AddEditTaskModalProps> = ({
       let response;
 
       if (mode === "edit") {
-        response = await updateTask(taskData);
+        // response = await updateTask(taskData);
+        const payload: Partial<Task> = {};
+
+        if (taskData.taskTitle !== existingTask?.taskTitle)
+          payload.taskTitle = taskData.taskTitle;
+
+        if (taskData.taskDescription !== existingTask?.taskDescription)
+          payload.taskDescription = taskData.taskDescription;
+
+        if (taskData.taskDueDate !== existingTask?.taskDueDate)
+          payload.taskDueDate = taskData.taskDueDate;
+
+        if (taskData.taskCourseTag !== existingTask?.taskCourseTag)
+          payload.taskCourseTag = taskData.taskCourseTag;
+
+        // if (taskData.taskStatus !== existingTask?.taskStatus)
+        //   payload.taskStatus = taskData.taskStatus;
+
+        if (Object.keys(payload).length > 0) {
+          response = await updateTask(taskData.taskId, payload);
+        }
+
         if (response.status) {
           showToast(response.message, "success");
         }

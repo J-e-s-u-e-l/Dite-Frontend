@@ -7,6 +7,7 @@ import { Task } from "@/types/interfaces";
 import {
   fetchTaskStatuses,
   updateTaskStatus,
+  deleteTask,
 } from "@/services/task-managerServices";
 
 interface TaskProps {
@@ -24,7 +25,7 @@ const TaskCard: React.FC<TaskProps> = ({ task, onTaskUpdated }) => {
     const loadStatuses = async () => {
       try {
         const response = await fetchTaskStatuses();
-        setStatusOptions(response.data);
+        setStatusOptions(response.data.taskStatuses);
       } catch (error) {
         console.error("Failed to load statuses:", error);
       }
@@ -34,9 +35,11 @@ const TaskCard: React.FC<TaskProps> = ({ task, onTaskUpdated }) => {
 
   const handleStatusChange = async (newStatus: string) => {
     try {
-      const updatedTask = { ...task, taskStatus: newStatus };
-      await updateTaskStatus(updatedTask);
-      onTaskUpdated(updatedTask);
+      // const updatedTask = { ...task, taskStatus: newStatus };
+      // await updateTaskStatus(updatedTask);
+      await updateTaskStatus(task.taskId, { taskStatus: newStatus });
+      // onTaskUpdated(updatedTask);
+      onTaskUpdated({ ...task, taskStatus: newStatus });
     } catch (error) {
       console.error("Failed to update status:", error);
     }
@@ -47,7 +50,15 @@ const TaskCard: React.FC<TaskProps> = ({ task, onTaskUpdated }) => {
       <div>
         <h3 className="text-lg font-semibold">{task.taskTitle}</h3>
         <p className="text-gray-600">{task.taskDescription}</p>
-        <p className="text-sm text-gray-500">Due: {task.taskDueDate}</p>
+        <p className="text-sm text-gray-500">
+          Due:{" "}
+          {new Date(task.taskDueDate).toLocaleDateString("en-US", {
+            weekday: "short",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          })}
+        </p>
 
         <div className="mt-2 text-sm font-semibold">
           Status: <span className="text-blue-600">{task.taskStatus}</span>
@@ -85,7 +96,11 @@ const TaskCard: React.FC<TaskProps> = ({ task, onTaskUpdated }) => {
         <AddEditTaskModal
           onClose={() => setIsEditModalOpen(false)}
           mode="edit"
-          existingTask={task}
+          existingTask={{ ...task, taskStatus: task.taskStatus ?? "" }}
+          // existingTask={{
+          //   ...task,
+          //   taskStatus: task.taskStatus ?? "Pending", // Default value if undefined
+          // }}
           onTaskSaved={onTaskUpdated}
         />
       )}
@@ -93,7 +108,7 @@ const TaskCard: React.FC<TaskProps> = ({ task, onTaskUpdated }) => {
       {isConfirmModalOpen && (
         <ConfirmationModal
           message="Are you sure you want to delete this task?"
-          onConfirm={() => console.log("Task deleted")}
+          onConfirm={() => deleteTask(task.taskId)}
           onCancel={() => setIsConfirmModalOpen(false)}
         />
       )}
