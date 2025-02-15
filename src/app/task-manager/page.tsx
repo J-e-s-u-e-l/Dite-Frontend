@@ -79,7 +79,7 @@ const TaskManagerPage = () => {
             onChange={handleStatusFilterChange}
             className="border rounded px-3 py-2"
           >
-            <option value="all">All</option>
+            <option value="all">All Tasks</option>
             {statusOptions.map((status) => (
               <option key={status} value={status}>
                 {status}
@@ -95,16 +95,25 @@ const TaskManagerPage = () => {
           </button>
         </div>
       </div>
+      <ProgressTracker />
 
       {filteredTasks.length > 0 ? (
         <TaskList
           tasks={filteredTasks}
           onTaskUpdated={(updatedTask) => {
-            setTasks(
-              tasks.map((t) =>
-                t.taskId === updatedTask.taskId ? updatedTask : t
+            // setTasks(
+            //   tasks.map((t) =>
+            //     t.taskId === updatedTask.taskId ? updatedTask : t
+            //   )
+            // );
+            setTasks((prevTasks) =>
+              prevTasks.map((t) =>
+                t.taskId === updatedTask.taskId ? { ...t, ...updatedTask } : t
               )
             );
+          }}
+          onTaskDeleted={(taskId) => {
+            setTasks(tasks.filter((t) => t.taskId !== taskId));
           }}
         />
       ) : (

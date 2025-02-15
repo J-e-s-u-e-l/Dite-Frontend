@@ -9,17 +9,25 @@ import {
   updateTaskStatus,
   deleteTask,
 } from "@/services/task-managerServices";
+import { useToast } from "@/context/ToastContext";
 
 interface TaskProps {
   task: Task;
   onTaskUpdated: (updatedTask: Task) => void;
+  onTaskDeleted: (taskId: string) => void;
 }
 
 // const TaskCard: React.FC<TaskProps> = ({ task, onTaskUpdated }) => {
-const TaskCard: React.FC<TaskProps> = ({ task, onTaskUpdated }) => {
+const TaskCard: React.FC<TaskProps> = ({
+  task,
+  onTaskUpdated: onTaskUpdated,
+  onTaskDeleted,
+}) => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [statusOptions, setStatusOptions] = useState<string[]>([]);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const { showToast } = useToast();
 
   useEffect(() => {
     const loadStatuses = async () => {
@@ -45,6 +53,25 @@ const TaskCard: React.FC<TaskProps> = ({ task, onTaskUpdated }) => {
     }
   };
 
+  const handleDeleteTask = async () => {
+    setIsDeleting(true);
+    try {
+      const response = await deleteTask(task.taskId);
+      if (response.status) {
+        onTaskDeleted(task.taskId);
+        showToast("Task deleted successfully", "success");
+      } else {
+        showToast("Failed to delete task", "error");
+      }
+    } catch (error) {
+      console.error("Error deleting task:", error);
+      showToast("Something went wrong", "error");
+    } finally {
+      setIsDeleting(false);
+      setIsConfirmModalOpen(false);
+    }
+  };
+
   return (
     <div className="border p-4 rounded-md shadow-md bg-white flex justify-between items-start">
       <div>
@@ -59,6 +86,11 @@ const TaskCard: React.FC<TaskProps> = ({ task, onTaskUpdated }) => {
             day: "numeric",
           })}
         </p>
+        {task.taskCourseTag && (
+          <span className="inline-block bg-blue-100 text-blue-700 px-2 py-1 rounded mt-1 text-xs">
+            {task.taskCourseTag}
+          </span>
+        )}
 
         <div className="mt-2 text-sm font-semibold">
           Status: <span className="text-blue-600">{task.taskStatus}</span>
@@ -75,8 +107,9 @@ const TaskCard: React.FC<TaskProps> = ({ task, onTaskUpdated }) => {
         <button
           onClick={() => setIsConfirmModalOpen(true)}
           className="text-red-500"
+          disabled={isDeleting}
         >
-          Delete
+          {isDeleting ? "Deleting" : "Delete"}
         </button>
 
         <select
@@ -108,7 +141,7 @@ const TaskCard: React.FC<TaskProps> = ({ task, onTaskUpdated }) => {
       {isConfirmModalOpen && (
         <ConfirmationModal
           message="Are you sure you want to delete this task?"
-          onConfirm={() => deleteTask(task.taskId)}
+          onConfirm={handleDeleteTask}
           onCancel={() => setIsConfirmModalOpen(false)}
         />
       )}

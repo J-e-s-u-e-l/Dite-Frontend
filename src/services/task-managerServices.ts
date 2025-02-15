@@ -83,7 +83,7 @@ export const updateTaskStatus = async (
   try {
     const payload = { taskId, ...statusUpdate };
     const response = await apiClient.patch(
-      `${process.env.NEXT_PUBLIC_API_URL}/TaskManager/update-task-status`,
+      `${process.env.NEXT_PUBLIC_API_URL}/TaskManager/update-task`,
       payload
     );
 
@@ -112,5 +112,24 @@ export const deleteTask = async (taskId: string) => {
     return response.data;
   } catch (error: any) {
     throw new Error(error.response?.data?.message || "failed to delete task");
+  }
+};
+
+export const fetchCompletionRate = async (selectedFilter: string) => {
+  try {
+    const response = await apiClient.get(
+      `${process.env.NEXT_PUBLIC_API_URL}/TaskManager/completion-rate?timeFilter=${selectedFilter}`
+    );
+
+    if (!response.data.status) {
+      throw new Error(response.data.message);
+    }
+
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error.response?.data?.message ||
+        "failed to fetch completion rate for selected filter"
+    );
   }
 };

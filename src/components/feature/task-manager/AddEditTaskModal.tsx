@@ -71,11 +71,18 @@ const AddEditTaskModal: React.FC<AddEditTaskModalProps> = ({
 
         if (Object.keys(payload).length > 0) {
           response = await updateTask(taskData.taskId, payload);
+
+          if (response && response.status) {
+            showToast(response.message, "success");
+          }
+          onTaskSaved(response.data);
+        } else {
+          showToast("No changes made", "info");
         }
 
-        if (response.status) {
-          showToast(response.message, "success");
-        }
+        // if (response.status) {
+        //   showToast(response.message, "success");
+        // }
       } else if (mode === "add") {
         const payload = {
           taskTitle: taskData.taskTitle,
@@ -131,7 +138,11 @@ const AddEditTaskModal: React.FC<AddEditTaskModalProps> = ({
           <input
             type="date"
             name="taskDueDate"
-            value={taskData.taskDueDate}
+            value={
+              taskData.taskDueDate
+                ? new Date(taskData.taskDueDate).toLocaleDateString("en-CA")
+                : ""
+            }
             onChange={handleChange}
             className="w-full border rounded-md p-2"
             required
