@@ -263,7 +263,7 @@ const Register = () => {
 
         showToast(data.message, "info");
         setTimeout(() => {
-          router.push("/verify-otp");
+          router.push("/verify-otp?purpose=emailVerification");
         }, 5000);
       }
       if (!data.status) {

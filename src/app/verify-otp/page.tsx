@@ -8,7 +8,7 @@ import { useToast } from "@/context/ToastContext";
 const VerifyOtpPage = () => {
   const [otp, setOtp] = useState("");
   const [error, setError] = useState("");
-  const [isResendDisabled, setisResendDisabled] = useState(false);
+  const [isResendDisabled, setIsResendDisabled] = useState(false);
   const [timer, setTimer] = useState(30); // Initial timer value in seconds
   const router = useRouter();
 
@@ -72,7 +72,7 @@ const VerifyOtpPage = () => {
         }
       );
 
-      setisResendDisabled(true);
+      setIsResendDisabled(true);
       setTimer(30);
 
       const data = await response.json();
@@ -97,7 +97,7 @@ const VerifyOtpPage = () => {
         setTimer((prevTimer) => {
           if (prevTimer <= 1) {
             clearInterval(interval);
-            setisResendDisabled(false);
+            setIsResendDisabled(false);
             return 0;
           }
           return prevTimer - 1;
