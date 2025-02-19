@@ -1,222 +1,171 @@
 import * as SignalR from "@microsoft/signalr";
-import { getCookie } from "@/utils/apiClient";
+import { AnyARecord } from "node:dns";
+import { create } from "zustand";
 
-// const messageHubConnection = new SignalR.HubConnectionBuilder()
-//   .withUrl(`${process.env.NEXT_PUBLIC_API_URL}/message-hub`, {
-//     accessTokenFactory: () => localStorage.getItem("token") || "",
-//   })
-//   .withAutomaticReconnect()
-//   .build();
-const messageHubConnection = new SignalR.HubConnectionBuilder()
-  .withUrl(`${process.env.NEXT_PUBLIC_API_URL}/message-hub`)
-  .withAutomaticReconnect()
-  .build();
+interface SignalRStore {
+  messageHubConnection: SignalR.HubConnection | null;
+  notificationHubConnection: SignalR.HubConnection | null;
+  connectMessageHub: (academyId: string) => Promise<any | null>;
+  disconnectMessageHub: (academyId: string) => Promise<void>;
+  connectMessageReplyHub: (messageId: string) => Promise<void>;
+  disconnectMessageReplyHub: (messageId: string) => Promise<void>;
+}
 
-const notificationHubConnection = new SignalR.HubConnectionBuilder()
-  .withUrl(`${process.env.NEXT_PUBLIC_API_URL}/notification-hub`, {
-    headers: {
-      Authorization: `Bearer ${getCookie("authToken")}`,
-    },
-  })
-  .withAutomaticReconnect()
-  .build();
-// const notificationHubConnection = new SignalR.HubConnectionBuilder()
-//   .withUrl(`${process.env.NEXT_PUBLIC_API_URL}/notification-hub`)
-//   .withAutomaticReconnect()
-//   .build();
+export const useSignalRStore = create<SignalRStore>((set, get) => ({
+  messageHubConnection: null,
+  notificationHubConnection: null,
 
-export const startHubConnection = async (connection, hubName) => {
-  try {
-    // if (connection.state === "Disconnected") {
+  connectMessageHub: async (academyId) => {
+    let connection = get().messageHubConnection;
+
+    if (!connection) {
+      connection = new SignalR.HubConnectionBuilder()
+        .withUrl(`${process.env.NEXT_PUBLIC_API_URL}/message-hub`)
+        .withAutomaticReconnect()
+        .build();
+
+      set({ messageHubConnection: connection });
+
+      connection.onreconnecting(() => console.log("Reconnecting..."));
+      connection.onreconnected(() => console.log("Reconnected."));
+      connection.onclose(() => console.log("Disconnected."));
+    }
+
     if (connection.state === SignalR.HubConnectionState.Disconnected) {
-      await connection.start();
-      console.log(`${hubName} connection established`);
-    } else {
-      console.log(`${hubName} connection is already active`);
-    }
+      try {
+        await connection.start();
+        console.log(
+          `Message hub connection established for academy ${academyId}`
+        );
 
-    connection.onreconnecting(() => {
-      console.log(`${hubName} connection lost. Attempting to reconnect...`);
-    });
-
-    connection.onreconnected(() => {
-      console.log(`${hubName} connection successfully reestablished.`);
-    });
-  } catch (error) {
-    console.error(`Error while starting ${hubName} connection`, error);
-  }
-};
-
-// MESSAGE SERVICES
-export const startSignalRConnectionForMessages = async (
-  academyId: string | string[] | undefined
-) => {
-  await startHubConnection(messageHubConnection, "Message Hub");
-
-  // Wait for the connection to be in the "Connected" state before invoking JoinAcademyGroup
-  if (messageHubConnection.state !== SignalR.HubConnectionState.Connected) {
-    messageHubConnection.onclose(async () => {
-      console.log("Reconnecting...");
-      await startHubConnection(messageHubConnection, "Message Hub");
-    });
-
-    await new Promise<void>((resolve) => {
-      const interval = setInterval(() => {
-        if (
-          messageHubConnection.state === SignalR.HubConnectionState.Connected
-        ) {
-          clearInterval(interval);
-          resolve();
+        if (connection.state === SignalR.HubConnectionState.Connected) {
+          await connection.invoke("JoinAcademyGroup", academyId);
+          console.log(`Joined academy group: ${academyId}`);
         }
-      }, 100);
-    });
-  }
 
-  if (academyId) {
-    try {
-      await messageHubConnection.invoke("JoinAcademyGroup", academyId);
-      console.log(`Joined academy group: ${academyId}`);
-    } catch (error) {
-      console.error("Failed to join academy group", error);
+        return connection; // Return connection after fully established
+      } catch (error) {
+        console.error("Error while establishing connection", error);
+        return null;
+      }
+    } else {
+      console.log("Connection is already established.");
+      return connection;
     }
-  }
-};
+  },
+
+  disconnectMessageHub: async (academyId) => {
+    const connection = get().messageHubConnection;
+    if (connection?.state === SignalR.HubConnectionState.Connected) {
+      await connection.invoke("LeaveAcademyGroup", academyId);
+      console.log(`Left academy group: ${academyId}`);
+    }
+  },
+
+  connectMessageReplyHub: async (messageId) => {
+    let connection = get().messageHubConnection;
+
+    if (!connection) {
+      connection = new SignalR.HubConnectionBuilder()
+        .withUrl(`${process.env.NEXT_PUBLIC_API_URL}/message-hub`)
+        .withAutomaticReconnect()
+        .build();
+
+      set({ messageHubConnection: connection });
+
+      connection.onreconnecting(() => console.log("Reconnecting..."));
+      connection.onreconnected(() => console.log("Reconnected."));
+      connection.onclose(() => console.log("Disconnected."));
+    }
+
+    if (connection.state === SignalR.HubConnectionState.Disconnected) {
+      try {
+        await connection.start();
+        console.log(
+          `Message hub connection established for message ${messageId}`
+        );
+      } catch (error) {
+        console.error("Error while establishing connection", error);
+        return;
+      }
+    }
+
+    try {
+      await connection.invoke("JoinMessageGroup", messageId);
+      console.log(`Joined message group: ${messageId}`);
+    } catch (error) {
+      console.error("Failed to join message group", error);
+    }
+  },
+
+  disconnectMessageReplyHub: async (messageId) => {
+    const connection = get().messageHubConnection;
+    if (connection?.state === SignalR.HubConnectionState.Connected) {
+      await connection.invoke("LeaveMessageGroup", messageId);
+      console.log(`Left message group: ${messageId}`);
+    }
+  },
+
+  //   let connection = get().notificationHubConnection;
+
+  //   if (!connection) {
+  //     connection = new SignalR.HubConnectionBuilder()
+  //       .withUrl(`${process.env.NEXT_PUBLIC_API_URL}/notification-hub`, {
+  //         headers: { Authorization: `Bearer ${getCookie("authToken")}` },
+  //       })
+  //       .withAutomaticReconnect()
+  //       .build();
+
+  //     set({ notificationHubConnection: connection });
+
+  //     connection.onreconnecting(() => console.log("Reconnecting..."));
+  //     connection.onreconnected(() => console.log("Reconnected."));
+  //     connection.onclose(() => console.log("Disconnected."));
+  //   }
+
+  //   if (connection.state === SignalR.HubConnectionState.Disconnected) {
+  //     await connection.start();
+  //     console.log("Notification hub connected.");
+  //   }
+  // },
+
+  // disconnectNotificationHub: () => {
+  //   const connection = get().notificationHubConnection;
+  //   if (connection?.state === SignalR.HubConnectionState.Connected) {
+  //     connection.stop();
+  //     console.log("Notification hub disconnected.");
+  //   }
+  // },
+}));
 
 export const subscribeToDiscussionHubMessages = (
   callback: (message: any) => void
 ) => {
+  const messageHubConnection = useSignalRStore.getState().messageHubConnection;
+
+  if (!messageHubConnection) {
+    console.error("Message hub connection is not initialized.");
+    return;
+  }
+
   messageHubConnection.off("ReceiveMessage");
   messageHubConnection.on("ReceiveMessage", (message) => {
     callback(message);
   });
 };
 
-export const cleanupDiscussionHubSubscription = async (
-  academyId: string | string[] | undefined
-) => {
-  if (!academyId) return;
-
-  console.log(`Cleaning up for academy: ${academyId}`);
-
-  if (messageHubConnection.state === SignalR.HubConnectionState.Connected) {
-    await messageHubConnection.invoke("LeaveAcademyGroup", academyId);
-    console.log(`Left academy group: ${academyId}`);
-  }
-
-  messageHubConnection.off("ReceiveMessage");
-};
-
-// MESSAGE REPLIES i.e responses to a message
-export const startSignalRConnectionForMessageResponses = async (
-  messageId: string | string[] | undefined
-) => {
-  await startHubConnection(messageHubConnection, "Message Replies");
-
-  // Wait for the connection to be in the "Connected" state before invoking the join method
-  if (messageHubConnection.state !== SignalR.HubConnectionState.Connected) {
-    messageHubConnection.onclose(async () => {
-      console.log("Reconnecting...");
-      await startHubConnection(messageHubConnection, "Message Hub");
-    });
-
-    await new Promise<void>((resolve) => {
-      const interval = setInterval(() => {
-        if (
-          messageHubConnection.state === SignalR.HubConnectionState.Connected
-        ) {
-          clearInterval(interval);
-          resolve();
-        }
-      }, 100);
-    });
-  }
-
-  if (messageId) {
-    try {
-      await messageHubConnection.invoke("JoinMessageGroup", messageId);
-      console.log(`Joined message group: ${messageId}`);
-    } catch (error) {
-      console.error("Failed to join message group", error);
-    }
-  }
-};
-
 export const subscribeToMessageReplies = (
   callback: (messageReply: any) => void
 ) => {
+  const messageHubConnection = useSignalRStore.getState().messageHubConnection;
+
+  if (!messageHubConnection) {
+    console.error("Message hub connection is not initialized.");
+    return;
+  }
+
   messageHubConnection.off("ReceiveReply");
   messageHubConnection.on("ReceiveReply", (messageReply) => {
     callback(messageReply);
   });
-};
-
-export const cleanupMessageRepliesSubscription = async (
-  messageId: string | string[] | undefined
-) => {
-  if (!messageId) return;
-
-  console.log(`Cleaning up for message: ${messageId}`);
-
-  if (messageHubConnection.state === SignalR.HubConnectionState.Connected) {
-    await messageHubConnection.invoke("LeaveMessageGroup", messageId);
-    console.log(`Left message group: ${messageId}`);
-  }
-
-  messageHubConnection.off("ReceiveReply");
-};
-
-// NOTIFICATION SERVICES
-export const startSignalRConnectionForNotifications = async () => {
-  await startHubConnection(notificationHubConnection, "Notification Hub");
-
-  // Wait for the connection to be in the "Connected" state before invoking JoinNotificationGroup
-  if (
-    notificationHubConnection.state !== SignalR.HubConnectionState.Connected
-  ) {
-    notificationHubConnection.onclose(async () => {
-      console.log("Reconnecting...");
-      await startHubConnection(notificationHubConnection, "Notification Hub");
-    });
-
-    await new Promise<void>((resolve) => {
-      const interval = setInterval(() => {
-        if (
-          notificationHubConnection.state ===
-          SignalR.HubConnectionState.Connected
-        ) {
-          clearInterval(interval);
-          resolve();
-        }
-      }, 100);
-    });
-  }
-
-  // try {
-  //   await notificationHubConnection.invoke("JoinNotificationGroup");
-  //   console.log(`Joined Notification group`);
-  // } catch (error) {
-  //   console.error("Failed to join notification group", error);
-  // }
-};
-
-export const subscribeToNotifications = (
-  callback: (notification: any) => void
-) => {
-  notificationHubConnection.off("ReceiveNotification");
-  notificationHubConnection.on("ReceiveNotification", (notification) => {
-    callback(notification);
-  });
-};
-
-export const cleanupNotificationSubscription = async () => {
-  console.log(`Cleaning up for notification`);
-
-  // if (
-  //   notificationHubConnection.state === SignalR.HubConnectionState.Connected
-  // ) {
-  //   await notificationHubConnection.invoke("LeaveNotificationGroup");
-  //   console.log(`Left notification group`);
-  // }
-
-  notificationHubConnection.off("ReceiveNotification");
 };

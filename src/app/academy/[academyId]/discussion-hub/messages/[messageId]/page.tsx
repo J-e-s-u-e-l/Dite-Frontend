@@ -8,18 +8,19 @@ import {
 } from "@/services/discussionHubServices";
 import { useToast } from "@/context/ToastContext";
 import {
-  startSignalRConnectionForMessageResponses,
+  // startSignalRConnectionForMessageResponses,
   subscribeToMessageReplies,
-  cleanupMessageRepliesSubscription,
+  // cleanupMessageRepliesSubscription,
+  useSignalRStore,
 } from "@/services/signalRServices";
 
-interface Response {
-  responseBody: string;
-  responderUsername: string;
-  responderRoleInAcademy: string;
-  sentAtAgo: string;
-  sentAt: string;
-}
+// interface Response {
+//   responseBody: string;
+//   responderUsername: string;
+//   responderRoleInAcademy: string;
+//   sentAtAgo: string;
+//   sentAt: string;
+// }
 
 interface MessageDetails {
   messageTitle: string;
@@ -35,13 +36,17 @@ const MessageDetailsPage: React.FC = () => {
   const { messageId } = useParams();
 
   const [messageDetails, setMessageDetails] = useState<MessageDetails[]>();
-  const [allMessageResponses, setAllMessageResponses] = useState<
-    Response[] | null
-  >(null);
+  const [allMessageResponses, setAllMessageResponses] = useState<any[] | null>(
+    []
+  );
+
   const [newResponse, setNewResponse] = useState("");
   const [loading, setLoading] = useState(true);
   const [pageError, setPageError] = useState("");
   const { showToast } = useToast();
+
+  const { connectMessageReplyHub, disconnectMessageReplyHub } =
+    useSignalRStore();
 
   useEffect(() => {
     if (messageId) {
@@ -67,15 +72,35 @@ const MessageDetailsPage: React.FC = () => {
   useEffect(() => {
     if (!messageId) return;
 
-    startSignalRConnectionForMessageResponses(messageId);
-    subscribeToMessageReplies((newResponse) => {
-      setAllMessageResponses((prev) => [newResponse, ...prev]);
-    });
+    const connectAndSubscribe = async () => {
+      const connection = await connectMessageReplyHub(messageId as string);
+
+      if (connection) {
+        subscribeToMessageReplies((newReply) => {
+          setAllMessageResponses((prev) => [newReply, ...prev]);
+        });
+      }
+    };
+
+    connectAndSubscribe();
 
     return () => {
-      cleanupMessageRepliesSubscription(messageId);
+      disconnectMessageReplyHub(messageId as string);
     };
-  }, [messageId]);
+  }, [messageId]); // Ensure dependencies are correct
+
+  // useEffect(() => {
+  //   if (!messageId) return;
+
+  //   connectMessageReplyHub(messageId as string);
+  //   subscribeToMessageReplies((newResponse) => {
+  //     setAllMessageResponses((prev) => [newResponse, ...(prev ?? [])]);
+  //   });
+
+  //   return () => {
+  //     disconnectMessageReplyHub(messageId as string);
+  //   };
+  // }, [messageId]);
 
   const handleResponseSubmit = async () => {
     if (!newResponse.trim()) return;
@@ -128,7 +153,7 @@ const MessageDetailsPage: React.FC = () => {
         <p>Track: {messageDetails.trackName || "General"}</p>
         <p>
           By: {messageDetails.senderUserName}
-          <i>{messageDetails.senderRoleInAcademy}</i>
+          <i>({messageDetails.senderRoleInAcademy})</i>
         </p>
         <p>Sent at: {messageDetails.sentAtAgo}</p>
       </div>

@@ -55,7 +55,7 @@ const MessageCard: React.FC<MessageCardProps> = ({ message, academyId }) => {
         <span>
           • By:{" "}
           <span className="font-medium text-gray-900">
-            {message.senderUserName} <i>{message.senderRoleInAcademy}</i>
+            {message.senderUserName} <i>({message.senderRoleInAcademy})</i>
           </span>
         </span>
         <span>• {message.sentAtAgo}</span>

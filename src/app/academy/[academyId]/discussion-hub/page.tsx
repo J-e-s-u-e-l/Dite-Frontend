@@ -1,18 +1,19 @@
 "use client";
 
 import React from "react";
-import { fetchMessages } from "@/services/discussionHubServices";
-import {
-  startSignalRConnectionForMessages,
-  subscribeToDiscussionHubMessages,
-  cleanupDiscussionHubSubscription,
-} from "@/services/signalRServices";
-import MessageCard from "@/components/feature/academy/MessageCard";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useToast } from "@/context/ToastContext";
 import Loader from "@/components/common/Loader";
 import PostMessageModal from "@/components/feature/academy/PostMessageModal";
+import MessageCard from "@/components/feature/academy/MessageCard";
+import { fetchMessages } from "@/services/discussionHubServices";
+import {
+  //   startSignalRConnectionForMessages,
+  subscribeToDiscussionHubMessages,
+  useSignalRStore,
+  //   cleanupDiscussionHubSubscription,
+} from "@/services/signalRServices";
 
 const DiscussionHubPage: React.FC = () => {
   // const [messages, setMessages] = React.useState<any[]>([]);
@@ -22,15 +23,19 @@ const DiscussionHubPage: React.FC = () => {
   const [pageError, setPageError] = useState("");
   const [pageNumber, setPageNumber] = useState(1);
   const [remainingMessagesCount, setRemainingMessagesCount] = useState(0);
+  const { connectMessageHub, disconnectMessageHub } = useSignalRStore();
 
   const { academyId } = useParams();
   const { showToast } = useToast();
+
+  useEffect(() => {
+    fetchInitialMessages(1);
+  }, [academyId]);
 
   const fetchInitialMessages = async (pageNumber: number) => {
     setLoading(true);
     try {
       const response = await fetchMessages(academyId, pageNumber);
-      // setMessages(response);
       setMessages(response.data.messages);
       setRemainingMessagesCount(response.data.remainingMessagesCount);
     } catch (error) {
@@ -43,27 +48,58 @@ const DiscussionHubPage: React.FC = () => {
       setLoading(false);
     }
   };
-  useEffect(() => {
-    fetchInitialMessages(1);
-  }, [academyId]);
+
+  // useEffect(() => {
+  //   if (!academyId) return;
+
+  //   connectMessageHub(academyId as string);
+  //   subscribeToDiscussionHubMessages((newMessage) => {
+  //     setMessages((prev) => [newMessage, ...prev]);
+  //   });
+
+  //   return () => {
+  //     disconnectMessageHub(academyId as string);
+  //   };
+  // }, [academyId]);
 
   useEffect(() => {
     if (!academyId) return;
 
-    startSignalRConnectionForMessages(academyId);
-    subscribeToDiscussionHubMessages((newMessage) => {
-      setMessages((prev) => [newMessage, ...prev]);
-    });
+    let isMounted = true; // To avoid memory leaks
+
+    (async () => {
+      const connection = await connectMessageHub(academyId as string);
+
+      if (connection && isMounted) {
+        subscribeToDiscussionHubMessages((newMessage) => {
+          setMessages((prev) => [newMessage, ...prev]);
+        });
+      }
+    })();
 
     return () => {
-      cleanupDiscussionHubSubscription(academyId);
+      isMounted = false;
+      disconnectMessageHub(academyId as string);
     };
   }, [academyId]);
+
+  // useEffect(() => {
+  //   if (!academyId) return;
+
+  //   startSignalRConnectionForMessages(academyId);
+  //   subscribeToDiscussionHubMessages((newMessage) => {
+  //     setMessages((prev) => [newMessage, ...prev]);
+  //   });
+
+  //   return () => {
+  //     cleanupDiscussionHubSubscription(academyId);
+  //   };
+  // }, [academyId, router.asPath]);
 
   const handleReload = () => {
     setPageError("");
     fetchInitialMessages(1);
-    startSignalRConnectionForMessages(academyId);
+    // startSignalRConnectionForMessages(academyId);
   };
 
   const handlePageChange = async (pageNumber: number) => {
@@ -73,7 +109,6 @@ const DiscussionHubPage: React.FC = () => {
   if (loading) {
     return <Loader />;
   }
-  // if (pageError) return <div>Error: {pageError}</div>;
 
   if (pageError) {
     return (
@@ -90,19 +125,10 @@ const DiscussionHubPage: React.FC = () => {
   }
 
   return (
-    // <div className="overflow-y-scroll h-full p-6">
-    // <div className="bg-purple-400">
     <div className="p-6 bg-grey-100">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">Discussion Hub</h2>
       </div>
-      {/* {messages && messages.length > 0 ? (
-        messages.map((message, index) => (
-          <MessageCard key={index} message={message} />
-        ))
-      ) : (
-        <div>No messages yet. Start the discussion!</div>
-      )} */}
       {messages && messages.length > 0 ? (
         [...messages]
           .sort(
