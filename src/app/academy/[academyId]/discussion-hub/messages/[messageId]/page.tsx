@@ -8,10 +8,9 @@ import {
 } from "@/services/discussionHubServices";
 import { useToast } from "@/context/ToastContext";
 import {
-  // startSignalRConnectionForMessageResponses,
-  subscribeToMessageReplies,
-  // cleanupMessageRepliesSubscription,
+  // subscribeToMessageReplies,
   useSignalRStore,
+  subscribeToMessageReplies,
 } from "@/services/signalRServices";
 
 // interface Response {
@@ -72,22 +71,22 @@ const MessageDetailsPage: React.FC = () => {
   useEffect(() => {
     if (!messageId) return;
 
-    const connectAndSubscribe = async () => {
-      const connection = await connectMessageReplyHub(messageId as string);
+    (async () => {
+      const connection = await useSignalRStore
+        .getState()
+        .connectMessageHub(messageId as string);
 
       if (connection) {
         subscribeToMessageReplies((newReply) => {
           setAllMessageResponses((prev) => [newReply, ...prev]);
         });
       }
-    };
-
-    connectAndSubscribe();
+    })();
 
     return () => {
-      disconnectMessageReplyHub(messageId as string);
+      useSignalRStore.getState().disconnectMessageHub(messageId as string);
     };
-  }, [messageId]); // Ensure dependencies are correct
+  }, [messageId]);
 
   // useEffect(() => {
   //   if (!messageId) return;
@@ -145,59 +144,87 @@ const MessageDetailsPage: React.FC = () => {
   if (loading) return <p>Loading message details...</p>;
 
   return (
-    <div className="max-w-2x1 mx-auto p-4 bg-white rounded shadow-md">
-      <h2 className="text-2x1 font-bold">{messageDetails.messageTitle}</h2>
-      <p className="mt-2 text-gray-700">{messageDetails.messageBody}</p>
+    <div className="mx-auto p-6 bg-white rounded-lg shadow-lg border border-gray-200 min-h-screen">
+      {/* Message Title */}
+      <h2 className="text-3xl font-bold text-gray-900 border-b pb-2">
+        {messageDetails.messageTitle}
+      </h2>
 
-      <div className="text-sm text-gray-500 mt-4">
-        <p>Track: {messageDetails.trackName || "General"}</p>
+      {/* Message Body */}
+      <p className="mt-4 text-gray-800 text-lg leading-relaxed">
+        {messageDetails.messageBody}
+      </p>
+
+      {/* Message Meta Info */}
+      <div className="mt-4 text-sm text-gray-500 bg-gray-100 p-3 rounded-lg">
         <p>
-          By: {messageDetails.senderUserName}
-          <i>({messageDetails.senderRoleInAcademy})</i>
+          <span className="font-semibold">Track:</span>{" "}
+          {messageDetails.trackName || "General"}
         </p>
-        <p>Sent at: {messageDetails.sentAtAgo}</p>
+        <p>
+          <span className="font-semibold">By:</span>{" "}
+          {messageDetails.senderUserName}
+          <i className="ml-1 text-gray-600">
+            ({messageDetails.senderRoleInAcademy})
+          </i>
+        </p>
+        <p>
+          <span className="font-semibold">Sent at:</span>{" "}
+          {messageDetails.sentAtAgo}
+        </p>
       </div>
 
-      {/* <div className="mt-6">
-        <textarea className="w-full p-2 border rounded" rows={3} placeholder="Write your response..." value={newResponse} onChange={(e) => setNewResponse(e.target.value)} /> */}
+      {/* Response Input */}
       <div className="mt-6">
         <textarea
-          className="w-full p-2 border rounded"
+          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none shadow-sm"
           rows={3}
           placeholder="Write your response..."
           value={newResponse}
           onChange={(e) => setNewResponse(e.target.value)}
         />
         <button
-          className="bg-blue-600 text-white px-4 py-2 rounded mt-2 hover:bg-blue-700"
+          className="w-full mt-3 bg-blue-600 text-white font-semibold py-2 rounded-lg hover:bg-blue-700 transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
           onClick={handleResponseSubmit}
           disabled={loading}
         >
-          {loading ? "Submitting" : "Submit Response"}
+          {loading ? "Submitting..." : "Submit Response"}
         </button>
       </div>
 
-      <div className="mt-6">
-        <h3 className="text-lg font-semibold">Responses:</h3>
+      {/* Responses Section */}
+      <div className="mt-8">
+        <h3 className="text-xl font-semibold text-gray-900 mb-3">Responses:</h3>
         {allMessageResponses && allMessageResponses.length === 0 ? (
-          <p className="text-gray-500">No responses yet.</p>
+          <p className="text-gray-500 text-center py-4">No responses yet.</p>
         ) : (
-          allMessageResponses &&
-          [...allMessageResponses]
-            .sort(
-              (a, b) =>
-                new Date(b.sentAt).getTime() - new Date(a.sentAt).getTime()
-            )
-            .map((response, index) => (
-              <div key={index} className="border-t mt-4 pt-2">
-                <p className="font-medium">
-                  {response.responderUsername}{" "}
-                  <i>{response.responderRoleInAcademy}</i>
-                </p>
-                <p className="text-gray-700">{response.responseBody}</p>
-                <p className="text-xs text-gray-500">{response.sentAtAgo}</p>
-              </div>
-            ))
+          <div className="space-y-4">
+            {allMessageResponses &&
+              [...allMessageResponses]
+                .sort(
+                  (a, b) =>
+                    new Date(b.sentAt).getTime() - new Date(a.sentAt).getTime()
+                )
+                .map((response, index) => (
+                  <div
+                    key={index}
+                    className="bg-gray-50 p-4 rounded-lg shadow-sm border"
+                  >
+                    <p className="font-semibold text-gray-800">
+                      {response.responderUsername}{" "}
+                      <i className="text-gray-600">
+                        ({response.responderRoleInAcademy})
+                      </i>
+                    </p>
+                    <p className="text-gray-700 mt-2">
+                      {response.responseBody}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-2">
+                      {response.sentAtAgo}
+                    </p>
+                  </div>
+                ))}
+          </div>
         )}
       </div>
     </div>

@@ -70,9 +70,10 @@ const TaskManagerPage = () => {
   }
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">Task Manager</h1>
+    <div className="bg-gray-50 min-h-screen">
+      {/* <h1 className="text-2xl font-bold">Task Manager</h1> */}
+      <div className="sticky top-0 bg-white z-10 flex justify-between items-center py-4 px-6 shadow-md">
+        <h2 className="text-2xl font-bold text-gray-800">Task Manager</h2>
         <div className="flex gap-4">
           <select
             value={statusFilter}
@@ -95,38 +96,41 @@ const TaskManagerPage = () => {
           </button>
         </div>
       </div>
-      <ProgressTracker />
 
-      {filteredTasks.length > 0 ? (
-        <TaskList
-          tasks={filteredTasks}
-          onTaskUpdated={(updatedTask) => {
-            // setTasks(
-            //   tasks.map((t) =>
-            //     t.taskId === updatedTask.taskId ? updatedTask : t
-            //   )
-            // );
-            setTasks((prevTasks) =>
-              prevTasks.map((t) =>
-                t.taskId === updatedTask.taskId ? { ...t, ...updatedTask } : t
-              )
-            );
-          }}
-          onTaskDeleted={(taskId) => {
-            setTasks(tasks.filter((t) => t.taskId !== taskId));
-          }}
-        />
-      ) : (
-        <p className="text-center text-gray-500">No tasks available.</p>
-      )}
+      <div className="p-6">
+        <ProgressTracker />
 
-      {isModalOpen && (
-        <AddEditTaskModal
-          onClose={() => setIsModalOpen(false)}
-          onTaskSaved={(newTask) => setTasks([...tasks, newTask])}
-          mode="add"
-        />
-      )}
+        {filteredTasks.length > 0 ? (
+          <TaskList
+            tasks={filteredTasks}
+            onTaskUpdated={(updatedTask) => {
+              // setTasks(
+              //   tasks.map((t) =>
+              //     t.taskId === updatedTask.taskId ? updatedTask : t
+              //   )
+              // );
+              setTasks((prevTasks) =>
+                prevTasks.map((t) =>
+                  t.taskId === updatedTask.taskId ? { ...t, ...updatedTask } : t
+                )
+              );
+            }}
+            onTaskDeleted={(taskId) => {
+              setTasks(tasks.filter((t) => t.taskId !== taskId));
+            }}
+          />
+        ) : (
+          <p className="text-center text-gray-500">No tasks available.</p>
+        )}
+
+        {isModalOpen && (
+          <AddEditTaskModal
+            onClose={() => setIsModalOpen(false)}
+            onTaskSaved={(newTask) => setTasks([...tasks, newTask])}
+            mode="add"
+          />
+        )}
+      </div>
     </div>
   );
 };

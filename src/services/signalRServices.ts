@@ -1,5 +1,4 @@
 import * as SignalR from "@microsoft/signalr";
-import { AnyARecord } from "node:dns";
 import { create } from "zustand";
 
 interface SignalRStore {
@@ -7,51 +6,74 @@ interface SignalRStore {
   notificationHubConnection: SignalR.HubConnection | null;
   connectMessageHub: (academyId: string) => Promise<any | null>;
   disconnectMessageHub: (academyId: string) => Promise<void>;
-  connectMessageReplyHub: (messageId: string) => Promise<void>;
+  connectMessageReplyHub: (messageId: string) => Promise<any | null>;
   disconnectMessageReplyHub: (messageId: string) => Promise<void>;
 }
+
+// ✅ Extracted Reusable Connection Logic
+const connectHub = async (
+  hubName: "messageHubConnection" | "notificationHubConnection",
+  hubUrl: string
+): Promise<SignalR.HubConnection | null> => {
+  let connection = useSignalRStore.getState()[hubName];
+
+  if (!connection) {
+    connection = new SignalR.HubConnectionBuilder()
+      .withUrl(hubUrl)
+      .withAutomaticReconnect()
+      .build();
+
+    useSignalRStore.setState({ [hubName]: connection });
+
+    connection.onreconnecting(() => console.log("Reconnecting..."));
+    connection.onreconnected(() => console.log("Reconnected."));
+    connection.onclose(() => console.log("Disconnected."));
+  }
+
+  if (connection.state === SignalR.HubConnectionState.Disconnected) {
+    try {
+      await connection.start();
+      console.log(`Connected to ${hubUrl}`);
+      return connection;
+    } catch (error) {
+      console.error(`Error connecting to ${hubUrl}`, error);
+      return null;
+    }
+  }
+
+  return connection;
+};
 
 export const useSignalRStore = create<SignalRStore>((set, get) => ({
   messageHubConnection: null,
   notificationHubConnection: null,
 
+  // ✅ Reused `connectHub` for Message Hub
   connectMessageHub: async (academyId) => {
-    let connection = get().messageHubConnection;
+    const connection = await connectHub(
+      "messageHubConnection",
+      `${process.env.NEXT_PUBLIC_API_URL}/message-hub`
+    );
 
-    if (!connection) {
-      connection = new SignalR.HubConnectionBuilder()
-        .withUrl(`${process.env.NEXT_PUBLIC_API_URL}/message-hub`)
-        .withAutomaticReconnect()
-        .build();
-
-      set({ messageHubConnection: connection });
-
-      connection.onreconnecting(() => console.log("Reconnecting..."));
-      connection.onreconnected(() => console.log("Reconnected."));
-      connection.onclose(() => console.log("Disconnected."));
-    }
-
-    if (connection.state === SignalR.HubConnectionState.Disconnected) {
-      try {
-        await connection.start();
-        console.log(
-          `Message hub connection established for academy ${academyId}`
-        );
-
-        if (connection.state === SignalR.HubConnectionState.Connected) {
-          await connection.invoke("JoinAcademyGroup", academyId);
-          console.log(`Joined academy group: ${academyId}`);
-        }
-
-        return connection; // Return connection after fully established
-      } catch (error) {
-        console.error("Error while establishing connection", error);
-        return null;
+    if (connection) {
+      // Ensure connection is fully established before invoking
+      if (connection.state !== SignalR.HubConnectionState.Connected) {
+        await new Promise<void>((resolve) => {
+          const interval = setInterval(() => {
+            if (connection.state === SignalR.HubConnectionState.Connected) {
+              clearInterval(interval);
+              resolve();
+            }
+          }, 100);
+        });
       }
-    } else {
-      console.log("Connection is already established.");
-      return connection;
+
+      // Now it's safe to invoke JoinAcademyGroup
+      await connection.invoke("JoinAcademyGroup", academyId);
+      console.log(`Joined academy group: ${academyId}`);
     }
+
+    return connection;
   },
 
   disconnectMessageHub: async (academyId) => {
@@ -59,43 +81,23 @@ export const useSignalRStore = create<SignalRStore>((set, get) => ({
     if (connection?.state === SignalR.HubConnectionState.Connected) {
       await connection.invoke("LeaveAcademyGroup", academyId);
       console.log(`Left academy group: ${academyId}`);
+
+      await connection.stop(); // Ensure the connection stops
+      useSignalRStore.setState({ messageHubConnection: null });
     }
   },
 
+  // ✅ Reused `connectHub` for Message Reply Hub
   connectMessageReplyHub: async (messageId) => {
-    let connection = get().messageHubConnection;
-
-    if (!connection) {
-      connection = new SignalR.HubConnectionBuilder()
-        .withUrl(`${process.env.NEXT_PUBLIC_API_URL}/message-hub`)
-        .withAutomaticReconnect()
-        .build();
-
-      set({ messageHubConnection: connection });
-
-      connection.onreconnecting(() => console.log("Reconnecting..."));
-      connection.onreconnected(() => console.log("Reconnected."));
-      connection.onclose(() => console.log("Disconnected."));
-    }
-
-    if (connection.state === SignalR.HubConnectionState.Disconnected) {
-      try {
-        await connection.start();
-        console.log(
-          `Message hub connection established for message ${messageId}`
-        );
-      } catch (error) {
-        console.error("Error while establishing connection", error);
-        return;
-      }
-    }
-
-    try {
+    const connection = await connectHub(
+      "messageHubConnection",
+      `${process.env.NEXT_PUBLIC_API_URL}/message-hub`
+    );
+    if (connection) {
       await connection.invoke("JoinMessageGroup", messageId);
       console.log(`Joined message group: ${messageId}`);
-    } catch (error) {
-      console.error("Failed to join message group", error);
     }
+    return connection;
   },
 
   disconnectMessageReplyHub: async (messageId) => {
@@ -105,67 +107,39 @@ export const useSignalRStore = create<SignalRStore>((set, get) => ({
       console.log(`Left message group: ${messageId}`);
     }
   },
-
-  //   let connection = get().notificationHubConnection;
-
-  //   if (!connection) {
-  //     connection = new SignalR.HubConnectionBuilder()
-  //       .withUrl(`${process.env.NEXT_PUBLIC_API_URL}/notification-hub`, {
-  //         headers: { Authorization: `Bearer ${getCookie("authToken")}` },
-  //       })
-  //       .withAutomaticReconnect()
-  //       .build();
-
-  //     set({ notificationHubConnection: connection });
-
-  //     connection.onreconnecting(() => console.log("Reconnecting..."));
-  //     connection.onreconnected(() => console.log("Reconnected."));
-  //     connection.onclose(() => console.log("Disconnected."));
-  //   }
-
-  //   if (connection.state === SignalR.HubConnectionState.Disconnected) {
-  //     await connection.start();
-  //     console.log("Notification hub connected.");
-  //   }
-  // },
-
-  // disconnectNotificationHub: () => {
-  //   const connection = get().notificationHubConnection;
-  //   if (connection?.state === SignalR.HubConnectionState.Connected) {
-  //     connection.stop();
-  //     console.log("Notification hub disconnected.");
-  //   }
-  // },
 }));
 
+// ✅ Unified Subscription Logic
+const subscribeToEvent = (eventName: string, callback: (data: any) => void) => {
+  const connection = useSignalRStore.getState().messageHubConnection;
+  if (!connection) {
+    console.error(
+      `Cannot subscribe to ${eventName}, connection is not initialized.`
+    );
+    return;
+  }
+
+  if (connection.state !== SignalR.HubConnectionState.Connected) {
+    console.error(
+      `Cannot subscribe to ${eventName}, connection is not in Connected state.`
+    );
+    return;
+  }
+
+  connection.off(eventName);
+  connection.on(eventName, callback);
+};
+
+// ✅ Subscribes to new messages
 export const subscribeToDiscussionHubMessages = (
   callback: (message: any) => void
 ) => {
-  const messageHubConnection = useSignalRStore.getState().messageHubConnection;
-
-  if (!messageHubConnection) {
-    console.error("Message hub connection is not initialized.");
-    return;
-  }
-
-  messageHubConnection.off("ReceiveMessage");
-  messageHubConnection.on("ReceiveMessage", (message) => {
-    callback(message);
-  });
+  subscribeToEvent("ReceiveMessage", callback);
 };
 
+// ✅ Subscribes to new replies
 export const subscribeToMessageReplies = (
   callback: (messageReply: any) => void
 ) => {
-  const messageHubConnection = useSignalRStore.getState().messageHubConnection;
-
-  if (!messageHubConnection) {
-    console.error("Message hub connection is not initialized.");
-    return;
-  }
-
-  messageHubConnection.off("ReceiveReply");
-  messageHubConnection.on("ReceiveReply", (messageReply) => {
-    callback(messageReply);
-  });
+  subscribeToEvent("ReceiveReply", callback);
 };

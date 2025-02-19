@@ -10,6 +10,7 @@ import MessageCard from "@/components/feature/academy/MessageCard";
 import { fetchMessages } from "@/services/discussionHubServices";
 import {
   //   startSignalRConnectionForMessages,
+  // subscribeToDiscussionHubMessages,
   subscribeToDiscussionHubMessages,
   useSignalRStore,
   //   cleanupDiscussionHubSubscription,
@@ -65,12 +66,12 @@ const DiscussionHubPage: React.FC = () => {
   useEffect(() => {
     if (!academyId) return;
 
-    let isMounted = true; // To avoid memory leaks
-
     (async () => {
-      const connection = await connectMessageHub(academyId as string);
+      const connection = await useSignalRStore
+        .getState()
+        .connectMessageHub(academyId as string);
 
-      if (connection && isMounted) {
+      if (connection) {
         subscribeToDiscussionHubMessages((newMessage) => {
           setMessages((prev) => [newMessage, ...prev]);
         });
@@ -78,10 +79,30 @@ const DiscussionHubPage: React.FC = () => {
     })();
 
     return () => {
-      isMounted = false;
-      disconnectMessageHub(academyId as string);
+      useSignalRStore.getState().disconnectMessageHub(academyId as string);
     };
   }, [academyId]);
+
+  // useEffect(() => {
+  //   if (!academyId) return;
+
+  //   let isMounted = true; // To avoid memory leaks
+
+  //   (async () => {
+  //     const connection = await connectMessageHub(academyId as string);
+
+  //     if (connection && isMounted) {
+  //       subscribeToDiscussionHubMessages((newMessage) => {
+  //         setMessages((prev) => [newMessage, ...prev]);
+  //       });
+  //     }
+  //   })();
+
+  //   return () => {
+  //     isMounted = false;
+  //     disconnectMessageHub(academyId as string);
+  //   };
+  // }, [academyId]);
 
   // useEffect(() => {
   //   if (!academyId) return;
@@ -125,68 +146,86 @@ const DiscussionHubPage: React.FC = () => {
   }
 
   return (
-    <div className="p-6 bg-grey-100">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">Discussion Hub</h2>
+    <div className="bg-gray-100 min-h-screen">
+      {/* Header Section */}
+      <div className="sticky top-0 bg-white z-10 flex justify-between items-center py-4 px-6 shadow-md">
+        <h2 className="text-2xl font-bold text-gray-800">Discussion Hub</h2>
       </div>
-      {messages && messages.length > 0 ? (
-        [...messages]
-          .sort(
-            (a, b) =>
-              new Date(b.sentAt).getTime() - new Date(a.sentAt).getTime()
-          )
-          .map((message, index) => (
-            <MessageCard key={index} message={message} academyId={academyId} />
-          ))
-      ) : (
-        <div>No messages yet. Start the discussion!</div>
-      )}
+
+      {/* Messages List */}
+      <div className="p-6 space-y-4 mb-8">
+        {messages && messages.length > 0 ? (
+          [...messages]
+            .sort(
+              (a, b) =>
+                new Date(b.sentAt).getTime() - new Date(a.sentAt).getTime()
+            )
+            .map((message, index) => (
+              <MessageCard
+                key={index}
+                message={message}
+                academyId={academyId}
+              />
+            ))
+        ) : (
+          <div className="text-center text-gray-500 py-6">
+            No messages yet. Start the discussion!
+          </div>
+        )}
+      </div>
+
+      {/* Post Message Button */}
       <button
-        className="bg-blue-500 text-white px-4 py-2 rounded-md fixed bottom-20 right-10"
+        className="bg-blue-500 text-white px-6 py-3 rounded-lg shadow-md fixed bottom-20 right-10 hover:bg-blue-600 transition-colors"
         onClick={() => setModalOpen(true)}
+        aria-label="Post a new message"
       >
         Post Message
       </button>
 
       {/* Pagination Controls */}
-      <div className="pagination mt-4 flex items-center justify-center space-x-4">
-        <button
-          onClick={() => {
-            handlePageChange(pageNumber - 1);
-            setPageNumber(pageNumber - 1);
-          }}
-          disabled={pageNumber <= 1}
-          className={`px-4 py-2 rounded-md text-white font-medium ${
-            pageNumber <= 1
-              ? "bg-gray-400 cursor-not-allowed"
-              : "bg-blue-500 hover:bg-blue-600"
-          }`}
-        >
-          Previous
-        </button>
-        <span className="text-lg font-semibold text-gray-700">
-          {pageNumber}
-        </span>
-        <button
-          onClick={() => {
-            handlePageChange(pageNumber + 1);
-            setPageNumber(pageNumber + 1);
-          }}
-          className={`px-4 py-2 text-white rounded-md font-medium ${
-            remainingMessagesCount <= 1
-              ? "bg-gray-400 cursor-not-allowed"
-              : "bg-blue-500 hover:bg-blue-600"
-          }`}
-          disabled={remainingMessagesCount <= 0}
-        >
-          Next
-        </button>
-      </div>
+      {messages && messages.length > 0 && (
+        <div className="pagination mt-8 flex items-center justify-center space-x-4">
+          <button
+            onClick={() => {
+              handlePageChange(pageNumber - 1);
+              setPageNumber(pageNumber - 1);
+            }}
+            disabled={pageNumber <= 1}
+            aria-disabled={pageNumber <= 1}
+            className={`px-4 py-2 rounded-md text-white font-medium transition-colors ${
+              pageNumber <= 1
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-blue-500 hover:bg-blue-600"
+            }`}
+          >
+            Previous
+          </button>
+          <span className="text-lg font-semibold text-gray-700">
+            {pageNumber}
+          </span>
+          <button
+            onClick={() => {
+              handlePageChange(pageNumber + 1);
+              setPageNumber(pageNumber + 1);
+            }}
+            disabled={remainingMessagesCount <= 0}
+            aria-disabled={remainingMessagesCount <= 0}
+            className={`px-4 py-2 rounded-md text-white font-medium transition-colors ${
+              remainingMessagesCount <= 0
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-blue-500 hover:bg-blue-600"
+            }`}
+          >
+            Next
+          </button>
+        </div>
+      )}
 
+      {/* Post Message Modal */}
       <PostMessageModal
         isOpen={isModalOpen}
         onClose={() => setModalOpen(false)}
-        // onMessagePosted={handleNewMessage}
         academyId={academyId}
       />
     </div>

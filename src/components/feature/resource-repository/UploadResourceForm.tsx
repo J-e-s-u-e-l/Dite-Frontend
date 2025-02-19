@@ -36,19 +36,28 @@ const UploadResourceForm: React.FC<UploadResourceFormProps> = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="mb-4 p-4 bg-gray-100 rounded-md">
+    <form
+      onSubmit={handleSubmit}
+      className="mb-6 p-6 bg-white rounded-lg shadow-md"
+    >
+      <label className="block text-gray-700 font-medium mb-2">
+        Upload File
+      </label>
+
       <input
         type="file"
-        // accept="image/*,application/pdf"
         onChange={handleFileChange}
-        className="mb-2"
+        className="block w-full text-sm text-gray-900 border border-gray-300 rounded-md cursor-pointer 
+                   file:bg-green-500 file:text-white file:border-none file:px-4 file:py-2 file:rounded-md 
+                   hover:file:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400"
       />
-      {error && <p className="text-red-500 text-sm">{error}</p>}
+
+      {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+
       <button
         type="submit"
-        className={`bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 ${
-          !file ? "opacity-50 cursor-not-allowed" : ""
-        }`}
+        className="mt-4 w-full bg-green-500 text-white px-4 py-2 rounded-md transition 
+                   hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
         disabled={!file}
       >
         Upload Resource

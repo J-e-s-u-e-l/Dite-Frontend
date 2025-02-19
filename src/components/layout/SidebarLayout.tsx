@@ -78,7 +78,8 @@ const PageLayout = ({ children }: { children: React.ReactNode }) => {
 
   return showSidebar ? (
     // <div className="min-h-screen flex overflow-hidden">
-    <div className="flex">
+    // <div className="flex">
+    <div className="flex h-screen overflow-hidden">
       {/* Sidebar */}
       <aside className="min-h-screen">
         <div
@@ -92,7 +93,8 @@ const PageLayout = ({ children }: { children: React.ReactNode }) => {
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         } md:translate-x-0 fixed top-0 left-0 bottom-0 w-80 bg-white flex flex-col justify-between text-black shadow-lg transition-transform duration-300 z-50 md:relative md:w-64`}
       > */}
-          <div className="flex flex-col justify-between items-center py-6 pr-4">
+          {/* <div className="flex flex-col justify-between items-center py-6 pr-4"> */}
+          <div className="flex flex-col justify-between items-center py-6 pr-4 overflow-y-auto">
             {/* Logo */}
             <Link
               href="/"
@@ -281,7 +283,8 @@ const PageLayout = ({ children }: { children: React.ReactNode }) => {
       </aside>
 
       {/* Main Content */}
-      <main className={`flex-grow transition-all duration-300`}>
+      {/* <main className={`flex-grow transition-all duration-300`}> */}
+      <main className={`flex-1 overflow-y-auto h-screen bg-gray-100`}>
         {children}
       </main>
 

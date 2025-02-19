@@ -73,23 +73,37 @@ const NotificationPage = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-3xl font-semibold text-gray-900 mb-6">
+    <div className="bg-white rounded-lg shadow-md border border-gray-200">
+      {/* Page Title */}
+      {/* <h1 className="text-3xl font-bold text-gray-900 mb-6 border-b pb-3">
         Notifications
-      </h1>
+      </h1> */}
+      <div className="sticky top-0 bg-white z-10 flex justify-between items-center py-4 px-6 shadow-md">
+        <h2 className="text-2xl font-bold text-gray-800">Notifications</h2>
+      </div>
 
-      {/* Uncomment when you add the search filter */}
-      {/* <NotificationSearchFilter setFilters={setFilters} /> */}
+      <div className="p-6">
+        {/* <NotificationSearchFilter setFilters={setFilters} /> */}
 
-      {loading ? (
-        <p className="text-gray-500 italic">Loading notifications...</p>
-      ) : notifications.length === 0 ? (
-        <p className="text-gray-500">
-          You don’t have any notifications at the moment.
-        </p>
-      ) : (
-        <NotificationList notifications={notifications} />
-      )}
+        {loading ? (
+          <div className="flex justify-center py-10">
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-blue-500"></div>
+            <p className="text-gray-500 italic ml-3">
+              Loading notifications...
+            </p>
+          </div>
+        ) : notifications.length === 0 ? (
+          // Empty State
+          <div className="text-gray-500 text-center py-10">
+            <p className="text-lg">📭 No new notifications at the moment.</p>
+          </div>
+        ) : (
+          // Notification List
+          <div className="mt-4">
+            <NotificationList notifications={notifications} />
+          </div>
+        )}
+      </div>
     </div>
   );
 };
