@@ -4,7 +4,7 @@ interface AuthPageProps {
   params: { purpose: string };
 }
 
-const AuthPage = async ({ params }: AuthPageProps) => {
+const AuthPage = ({ params }: AuthPageProps) => {
   const { purpose } = params;
 
   // Validate `purpose`
