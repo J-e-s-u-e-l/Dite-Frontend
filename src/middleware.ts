@@ -1,27 +1,33 @@
 import { NextRequest, NextResponse } from "next/server";
 
-export function middleware(req: NextRequest){
-    const token = req.cookies.get("authToken");
-    const isAuth = !!token;
+export default async function middleware(req: NextRequest) {
+  const token = req.cookies.get("authToken");
+  const isAuth = !!token;
 
-    const { pathname, search } = req.nextUrl;
-    
-    const publicPages = ["/login", "/register", "/verify-otp", "/emailVerification", "/passwordReset"];
+  const { pathname, search } = req.nextUrl;
 
-    // If user is not authenticated and tries to access protected routes
-    if (!isAuth && !publicPages.includes(pathname)) {
-        const loginUrl = new URL("/login", req.url);
+  const publicPages = [
+    "/login",
+    "/register",
+    "/verify-otp",
+    "/emailVerification",
+    "/passwordReset",
+  ];
 
-        // Append the current path (with query string) as a redirect URL
-        loginUrl.searchParams.set("redirect", pathname + search);
-    
-        return NextResponse.redirect(loginUrl);
-    }
+  // If user is not authenticated and tries to access protected routes
+  if (!isAuth && !publicPages.includes(pathname)) {
+    const loginUrl = new URL("/login", req.url);
 
-    // Allow access
-    return NextResponse.next();
+    // Append the current path (with query string) as a redirect URL
+    loginUrl.searchParams.set("redirect", pathname + search);
+
+    return NextResponse.redirect(loginUrl);
+  }
+
+  // Allow access
+  return NextResponse.next();
 }
 
 export const config = {
-    matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"], // Protect all pages except login and public assets
-  };
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"], // Protect all pages except login and public assets
+};
