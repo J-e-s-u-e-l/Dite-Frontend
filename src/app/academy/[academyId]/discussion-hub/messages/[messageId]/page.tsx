@@ -34,7 +34,9 @@ interface MessageDetails {
 const MessageDetailsPage: React.FC = () => {
   const { messageId } = useParams();
 
-  const [messageDetails, setMessageDetails] = useState<MessageDetails[]>();
+  const [messageDetails, setMessageDetails] = useState<MessageDetails | null>(
+    null
+  );
   const [allMessageResponses, setAllMessageResponses] = useState<any[] | null>(
     []
   );
@@ -57,7 +59,8 @@ const MessageDetailsPage: React.FC = () => {
     try {
       setLoading(true);
       const response = await fetchMessageDetails(messageId);
-      setMessageDetails(response.data.message[0]);
+      // setMessageDetails(response.data.message[0]);
+      setMessageDetails(response.data.message);
       setAllMessageResponses(response.data.responses);
     } catch (error) {
       console.error(error);
@@ -147,30 +150,30 @@ const MessageDetailsPage: React.FC = () => {
     <div className="mx-auto p-6 bg-white rounded-lg shadow-lg border border-gray-200 min-h-screen">
       {/* Message Title */}
       <h2 className="text-3xl font-bold text-gray-900 border-b pb-2">
-        {messageDetails.messageTitle}
+        {messageDetails?.messageTitle || "Undefined"}
       </h2>
 
       {/* Message Body */}
       <p className="mt-4 text-gray-800 text-lg leading-relaxed">
-        {messageDetails.messageBody}
+        {messageDetails?.messageBody || "Undefined"}
       </p>
 
       {/* Message Meta Info */}
       <div className="mt-4 text-sm text-gray-500 bg-gray-100 p-3 rounded-lg">
         <p>
           <span className="font-semibold">Track:</span>{" "}
-          {messageDetails.trackName || "General"}
+          {messageDetails?.trackName || "General"}
         </p>
         <p>
           <span className="font-semibold">By:</span>{" "}
-          {messageDetails.senderUserName}
+          {messageDetails?.senderUserName || "Undefined"}
           <i className="ml-1 text-gray-600">
-            ({messageDetails.senderRoleInAcademy})
+            ({messageDetails?.senderRoleInAcademy || "Undefined"})
           </i>
         </p>
         <p>
           <span className="font-semibold">Sent at:</span>{" "}
-          {messageDetails.sentAtAgo}
+          {messageDetails?.sentAtAgo || "Undefined"}
         </p>
       </div>
 

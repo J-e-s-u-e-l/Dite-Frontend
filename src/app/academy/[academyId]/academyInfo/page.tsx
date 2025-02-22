@@ -108,11 +108,11 @@ const AcademyInfoPage = () => {
     }
   }, [academyId]);
 
-  const toggleSelectedMember = (member) => {
+  const toggleSelectedMember = (member: any) => {
     if (selectedMember?.userId === member.userId) {
-      setSelectedMember(null); // Deselect the member to close the modal
+      setSelectedMember(null);
     } else {
-      setSelectedMember(member); // Select the member to open the modal
+      setSelectedMember(member);
     }
   };
 

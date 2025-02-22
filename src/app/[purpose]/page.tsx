@@ -1,12 +1,11 @@
 import VerificationComponent from "./VerificationComponent";
 
-interface AuthPageProps {
-  params: { purpose: string };
-}
-
-const AuthPage = async ({ params }: { params: { purpose: string } }) => {
-  const { purpose } = params;
-
+const AuthPage = async ({
+  params,
+}: {
+  params: Promise<{ purpose: string }>;
+}) => {
+  const purpose = (await params).purpose;
   // Validate `purpose`
   if (purpose !== "emailVerification" && purpose !== "passwordReset") {
     return (
