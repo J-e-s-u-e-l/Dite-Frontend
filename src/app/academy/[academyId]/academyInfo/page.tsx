@@ -101,7 +101,8 @@ const AcademyInfoPage = () => {
       setLoading(false);
     }
   };
-// Nothing much
+  // Nothing much
+  // Nothing much
   useEffect(() => {
     if (academyId) {
       fetchTracks();
