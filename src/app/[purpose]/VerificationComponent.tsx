@@ -78,12 +78,56 @@ const VerificationComponent: React.FC<VerificationComponentProps> = ({
     }
   };
 
+  // return (
+  //   <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
+  //     <div className="w-full max-w-md p-6 bg-white shadow-md rounded-lg">
+  //       <h1 className="text-2xl font-bold text-center text-gray-800">
+  //         {headerText}
+  //       </h1>
+  //       <form onSubmit={handleSubmit} className="mt-4">
+  //         <div>
+  //           <label
+  //             htmlFor="email"
+  //             className="block text-sm font-medium text-gray-700"
+  //           >
+  //             Email
+  //           </label>
+  //           <input
+  //             id="email"
+  //             type="email"
+  //             value={email}
+  //             onChange={(e) => setEmail(e.target.value)}
+  //             className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-400 focus:border-blue-400 sm:text-sm text-black"
+  //             placeholder="Enter your email"
+  //             required
+  //           />
+  //         </div>
+
+  //         {error && <div className="mt-4 text-sm text-red-600">{error}</div>}
+
+  //         <button
+  //           type="submit"
+  //           disabled={isLoading}
+  //           className={`mt-6 w-full px-4 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 ${
+  //             isLoading ? "opacity-50 cursor-not-allowed" : ""
+  //           }`}
+  //         >
+  //           {isLoading ? "Processing..." : headerText}
+  //         </button>
+  //       </form>
+  //     </div>
+  //   </div>
+  // );
+
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-      <div className="w-full max-w-md p-6 bg-white shadow-md rounded-lg">
-        <h1 className="text-2xl font-bold text-center text-gray-800">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 px-4 py-8">
+      <div className="w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg p-6 sm:p-8 bg-white shadow-lg rounded-lg">
+        {/* Title */}
+        <h1 className="text-2xl font-bold text-center text-[#16a34a]">
           {headerText}
         </h1>
+
+        {/* Form */}
         <form onSubmit={handleSubmit} className="mt-4">
           <div>
             <label
@@ -97,20 +141,26 @@ const VerificationComponent: React.FC<VerificationComponentProps> = ({
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-400 focus:border-blue-400 sm:text-sm text-black"
+              className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm 
+                focus:ring-2 focus:ring-[#16a34a] focus:border-[#16a34a] sm:text-sm transition-all"
               placeholder="Enter your email"
               required
             />
           </div>
 
-          {error && <div className="mt-4 text-sm text-red-600">{error}</div>}
+          {/* Error Message */}
+          {error && (
+            <div className="mt-4 text-sm text-red-600 text-center">{error}</div>
+          )}
 
+          {/* Submit Button */}
           <button
             type="submit"
             disabled={isLoading}
-            className={`mt-6 w-full px-4 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 ${
-              isLoading ? "opacity-50 cursor-not-allowed" : ""
-            }`}
+            className={`mt-6 w-full px-4 py-3 text-white bg-[#16a34a] rounded-lg hover:bg-[#138b3f] 
+              focus:outline-none focus:ring-2 focus:ring-[#16a34a] transition-all text-sm sm:text-base ${
+                isLoading ? "opacity-50 cursor-not-allowed" : ""
+              }`}
           >
             {isLoading ? "Processing..." : headerText}
           </button>

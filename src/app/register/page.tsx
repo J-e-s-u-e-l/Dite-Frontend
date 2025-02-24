@@ -277,9 +277,12 @@ const Register = () => {
     }
   };
   return (
-    <form onSubmit={handleSubmit} className="max-w-lg mx-auto mt10 p-6">
+    <form
+      onSubmit={handleSubmit}
+      className="max-w-lg mx-auto mt-10 p-8 bg-white rounded-lg shadow-lg"
+    >
       {loading && <Loader />}
-      <h1 className="text-2xl font-bold mb-6">Register</h1>
+      <h1 className="text-2xl font-bold text-[#16a34a] mb-6">Register</h1>
 
       <div>
         <FormField
@@ -474,7 +477,7 @@ const Register = () => {
         >
           <button
             type="submit"
-            className={`w-full bg-blue-500 text-white py-2 px-4 rounded ${
+            className={`w-full bg-[#16a34a] text-white py-2 px-4 rounded ${
               isFormValid ? "" : "bg-gray-400 cursor-not-allowed"
             }`}
             disabled={!isFormValid}

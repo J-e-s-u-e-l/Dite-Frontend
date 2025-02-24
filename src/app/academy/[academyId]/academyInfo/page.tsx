@@ -109,7 +109,7 @@ const AcademyInfoPage = () => {
     }
   }, [academyId]);
 
-  const toggleSelectedMember = (member: any) => {
+  const toggleSelectedMember = (member) => {
     if (selectedMember?.userId === member.userId) {
       setSelectedMember(null);
     } else {

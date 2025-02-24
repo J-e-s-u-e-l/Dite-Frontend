@@ -73,7 +73,7 @@ const NotificationPage = () => {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-md border border-gray-200">
+    <div className="min-h-screen bg-white rounded-lg shadow-md border border-gray-200">
       {/* Page Title */}
       {/* <h1 className="text-3xl font-bold text-gray-900 mb-6 border-b pb-3">
         Notifications

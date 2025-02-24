@@ -7,7 +7,10 @@ import { useToast } from "@/context/ToastContext";
 import Loader from "@/components/common/Loader";
 import PostMessageModal from "@/components/feature/academy/PostMessageModal";
 import MessageCard from "@/components/feature/academy/MessageCard";
-import { fetchMessages } from "@/services/discussionHubServices";
+import {
+  fetchMessages,
+  MessagesResponse,
+} from "@/services/discussionHubServices";
 import {
   //   startSignalRConnectionForMessages,
   // subscribeToDiscussionHubMessages,
@@ -24,7 +27,7 @@ const DiscussionHubPage: React.FC = () => {
   const [pageError, setPageError] = useState("");
   const [pageNumber, setPageNumber] = useState(1);
   const [remainingMessagesCount, setRemainingMessagesCount] = useState(0);
-  const { connectMessageHub, disconnectMessageHub } = useSignalRStore();
+  // const { connectMessageHub, disconnectMessageHub } = useSignalRStore();
 
   const { academyId } = useParams();
   const { showToast } = useToast();
@@ -36,7 +39,10 @@ const DiscussionHubPage: React.FC = () => {
   const fetchInitialMessages = async (pageNumber: number) => {
     setLoading(true);
     try {
-      const response = await fetchMessages(academyId, pageNumber);
+      const response: MessagesResponse = await fetchMessages(
+        academyId,
+        pageNumber
+      );
       setMessages(response.data.messages);
       setRemainingMessagesCount(response.data.remainingMessagesCount);
     } catch (error) {
