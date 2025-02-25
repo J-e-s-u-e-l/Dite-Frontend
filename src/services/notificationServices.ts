@@ -11,7 +11,8 @@ export const fetchAllNotifications = async () => {
     return response.data;
   } catch (error) {
     throw new Error(
-      error.response?.data?.message || "Failed to fetch notifications"
+      (error as { response?: { data?: { message: string } } }).response?.data
+        ?.message || "Failed to fetch notifications"
     );
   }
 };
@@ -33,8 +34,8 @@ export const getUnreadNotificationsCount = async () => {
     return response.data;
   } catch (error) {
     throw new Error(
-      error.response?.data?.message ||
-        "Failed to fetch unread notifications count"
+      (error as { response?: { data?: { message: string } } }).response?.data
+        ?.message || "Failed to fetch unread notifications count"
     );
   }
 };
@@ -50,7 +51,8 @@ export const markNotificationAsRead = async (notificationId: string) => {
     return response.data;
   } catch (error) {
     throw new Error(
-      error.response?.data?.message || "Failed to mark notification as read"
+      (error as { response?: { data?: { message: string } } }).response?.data
+        ?.message || "Failed to mark notification as read"
     );
   }
 };
@@ -66,7 +68,8 @@ export const deleteNotification = async (notificationId: string) => {
     return response.data;
   } catch (error) {
     throw new Error(
-      error.response?.data?.message || "Failed to delete notification"
+      (error as { response?: { data?: { message: string } } }).response?.data
+        ?.message || "Failed to delete notification"
     );
   }
 };

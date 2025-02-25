@@ -11,7 +11,7 @@ const VerifyOtpPage = () => {
   const [isResendDisabled, setIsResendDisabled] = useState(false);
   const [timer, setTimer] = useState(30);
   const [otp, setOtp] = useState(Array(6).fill(""));
-  const inputRefs = useRef([]);
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const router = useRouter();
 
   const { showToast: showToast } = useToast();
@@ -25,7 +25,10 @@ const VerifyOtpPage = () => {
   //   setOtp(e.target.value);
   // };
 
-  const handleOtpChange = (e, index) => {
+  const handleOtpChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    index: number
+  ) => {
     const value = e.target.value;
 
     // Allow only numbers
@@ -36,7 +39,7 @@ const VerifyOtpPage = () => {
 
       // Move focus to the next box if a digit is entered
       if (value && index < 5) {
-        inputRefs.current[index + 1].focus();
+        inputRefs.current[index + 1]?.focus();
       }
     }
   };
@@ -109,7 +112,7 @@ const VerifyOtpPage = () => {
 
   // Resend timer functionality
   useEffect(() => {
-    let interval;
+    let interval: NodeJS.Timeout;
     if (isResendDisabled) {
       interval = setInterval(() => {
         setTimer((prevTimer) => {
@@ -125,17 +128,20 @@ const VerifyOtpPage = () => {
     return () => clearInterval(interval); // Cleanup on unmount
   }, [isResendDisabled]);
 
-  const handleKeyDown = (e, index) => {
+  const handleKeyDown = (
+    e: React.KeyboardEvent<HTMLInputElement>,
+    index: number
+  ) => {
     if (e.key === "Backspace" && !otp[index] && index > 0) {
       // Move focus to the previous box and clear the character
-      inputRefs.current[index - 1].focus();
+      inputRefs.current[index - 1]?.focus();
       const newOtp = [...otp];
       newOtp[index - 1] = "";
       setOtp(newOtp);
     }
   };
 
-  const handlePaste = (e) => {
+  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
     e.preventDefault();
     const pasteData = e.clipboardData.getData("text").slice(0, 6); // Get only the first 6 digits
     const newOtp = [...otp];
@@ -147,7 +153,7 @@ const VerifyOtpPage = () => {
     });
 
     setOtp(newOtp);
-    inputRefs.current[Math.min(5, pasteData.length - 1)].focus(); // Move focus to the last filled box
+    inputRefs.current[Math.min(5, pasteData.length - 1)]?.focus(); // Move focus to the last filled box
   };
 
   return (
@@ -163,13 +169,16 @@ const VerifyOtpPage = () => {
           {[...Array(6)].map((_, index) => (
             <input
               key={index}
-              ref={(el) => (inputRefs.current[index] = el)}
+              ref={(el) => {
+                inputRefs.current[index] = el;
+              }}
               type="text"
               maxLength={1}
               value={otp[index]}
               onChange={(e) => handleOtpChange(e, index)}
               onKeyDown={(e) => handleKeyDown(e, index)}
               onPaste={handlePaste}
+              placeholder="0"
               className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 text-center text-lg border border-gray-300 rounded-lg 
                 focus:outline-none focus:ring-2 focus:ring-[#16a34a] transition-all"
             />

@@ -226,7 +226,12 @@ const AcademyInfoPage = () => {
 
     setLoading(true);
     try {
-      const payload = {
+      const payload: {
+        memberId: string;
+        newRole: string;
+        academyId: string | string[] | undefined;
+        assignedTracksIds?: string[];
+      } = {
         memberId: selectedMember.userId,
         newRole,
         academyId,

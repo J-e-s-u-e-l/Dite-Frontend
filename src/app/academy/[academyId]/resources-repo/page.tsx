@@ -13,7 +13,7 @@ import {
 import { useParams } from "next/navigation";
 
 interface Resource {
-  resourceId: string | null;
+  resourceId: string;
   resourceName: string;
   resourceType: "image" | "document";
 }
@@ -54,7 +54,7 @@ const ResourceRepositoryPage: React.FC = () => {
     const file = formData.get("file");
     if (file instanceof File) {
       const newResource: Resource = {
-        resourceId: null,
+        resourceId: "",
         resourceName: file.name,
         resourceType: file.type.includes("image") ? "image" : "document",
       };

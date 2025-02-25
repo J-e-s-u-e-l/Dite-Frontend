@@ -27,7 +27,8 @@ export const uploadResource = async (
     return response.data;
   } catch (error) {
     throw new Error(
-      error.response?.data?.message || "Failed to upload resource"
+      (error as { response?: { data?: { message: string } } }).response?.data
+        ?.message || "Failed to upload resource"
     );
   }
 };
@@ -43,7 +44,8 @@ export const deleteResource = async (resourceId: string) => {
     return response.data;
   } catch (error) {
     throw new Error(
-      error.response?.data?.message || "Failed to delete resource"
+      (error as { response?: { data?: { message: string } } }).response?.data
+        ?.message || "Failed to delete resource"
     );
   }
 };
@@ -61,7 +63,8 @@ export const fetchResources = async (
     return response.data;
   } catch (error) {
     throw new Error(
-      error.response?.data?.message || "Failed to fetch repo resources"
+      (error as { response?: { data?: { message: string } } }).response?.data
+        ?.message || "Failed to fetch repo resources"
     );
   }
 };
@@ -90,7 +93,8 @@ export const downloadResource = async (
     return response;
   } catch (error) {
     throw new Error(
-      error.response?.data?.message || "Failed to download resource file."
+      (error as { response?: { data?: { message: string } } }).response?.data
+        ?.message || "Failed to download resource file."
     );
   }
 };

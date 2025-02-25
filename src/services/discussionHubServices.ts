@@ -27,7 +27,8 @@ export const fetchMessages = async (
     return response.data;
   } catch (error) {
     throw new Error(
-      error.response?.data?.message || "Failed to fetch messages"
+      (error as { response?: { data?: { message: string } } }).response?.data
+        ?.message || "Failed to fetch messages"
     );
   }
 };
@@ -49,7 +50,8 @@ export const postMessage = async (messageData: {
     return response.data;
   } catch (postMessageError) {
     throw new Error(
-      postMessageError.response?.data?.message || "Failed to post message"
+      (postMessageError as { response?: { data?: { message: string } } })
+        .response?.data?.message || "Failed to post message"
     );
   }
 };
@@ -69,8 +71,11 @@ export const fetchMessageDetails = async (
     return response.data;
   } catch (fetchMessageDetailsError) {
     throw new Error(
-      fetchMessageDetailsError.response?.data?.message ||
-        "Failed to fetch message details"
+      (
+        fetchMessageDetailsError as {
+          response?: { data?: { message: string } };
+        }
+      ).response?.data?.message || "Failed to fetch message details"
     );
   }
 };
@@ -94,8 +99,11 @@ export const postResponseToMessage = async (
     return response.data;
   } catch (fetchMessageDetailsError) {
     throw new Error(
-      fetchMessageDetailsError.response?.data?.message ||
-        "Failed to fetch message details"
+      (
+        fetchMessageDetailsError as {
+          response?: { data?: { message: string } };
+        }
+      ).response?.data?.message || "Failed to fetch message details"
     );
   }
 };

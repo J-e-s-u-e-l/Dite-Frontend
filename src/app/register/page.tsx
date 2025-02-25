@@ -56,7 +56,8 @@ const Register = () => {
 
   // Asynchronously check the email address availability
   const debouncedValidateEmail = useCallback(
-    debounce(async (email: string) => {
+    debounce(async (email: unknown) => {
+      const emailStr = email as string;
       setMessages((prev) => ({
         ...prev,
         email: null,
@@ -64,7 +65,7 @@ const Register = () => {
 
       setIsCheckingEmail(true);
 
-      const emailError = await validateUniqueEmail(email);
+      const emailError = await validateUniqueEmail(emailStr);
 
       setMessages((prev) => ({
         ...prev,
@@ -78,7 +79,8 @@ const Register = () => {
 
   // Asynchronously check the username availability
   const debouncedValidateUsername = useCallback(
-    debounce(async (username: string) => {
+    debounce(async (username: unknown) => {
+      const usernameStr = username as string;
       setMessages((prev) => ({
         ...prev,
         username: null,
@@ -86,7 +88,7 @@ const Register = () => {
 
       setIsCheckingUsername(true);
 
-      const usernameError = await validateUsername(username);
+      const usernameError = await validateUsername(usernameStr);
 
       setMessages((prev) => ({
         ...prev,
@@ -99,7 +101,9 @@ const Register = () => {
   );
 
   const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-    const { name } = e.target;
+    const { name } = e.target as HTMLInputElement & {
+      name: keyof typeof formData;
+    };
 
     setTouchedFields((prev) => ({ ...prev, [name]: true }));
 
@@ -225,7 +229,7 @@ const Register = () => {
     };
 
     // Update form validity
-    setIsFormValid(areAllFieldsValid() && noErrorMessages());
+    setIsFormValid(!!(areAllFieldsValid() && noErrorMessages()));
   }, [formData, confirmPassword, touchedFields, message, passwordRules]);
 
   const handleSubmit = async (e: React.FormEvent) => {

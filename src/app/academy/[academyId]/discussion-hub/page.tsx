@@ -77,7 +77,10 @@ const DiscussionHubPage: React.FC = () => {
 
       if (connection) {
         subscribeToDiscussionHubMessages((newMessage) => {
-          setMessages((prev) => [newMessage, ...prev]);
+          setMessages((prev) => [
+            newMessage as unknown as Message,
+            ...(prev || []),
+          ]);
         });
       }
     })();
@@ -168,7 +171,7 @@ const DiscussionHubPage: React.FC = () => {
               <MessageCard
                 key={index}
                 message={message}
-                academyId={academyId}
+                academyId={academyId as string}
               />
             ))
         ) : (
@@ -230,7 +233,7 @@ const DiscussionHubPage: React.FC = () => {
       <PostMessageModal
         isOpen={isModalOpen}
         onClose={() => setModalOpen(false)}
-        academyId={academyId}
+        academyId={academyId as string}
       />
     </div>
   );

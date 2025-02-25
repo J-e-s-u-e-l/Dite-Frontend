@@ -63,7 +63,7 @@ const PageLayout = ({ children }: { children: React.ReactNode }) => {
   };
 
   // Handle navigation button click
-  const handleNavClick = (link) => {
+  const handleNavClick = (link: string) => {
     setActiveNav(link);
     router.push(link);
   };
@@ -297,6 +297,7 @@ const PageLayout = ({ children }: { children: React.ReactNode }) => {
           <HiMenu className="h-8 w-8" />
         </button> */}
         <button
+          title="Toggle Sidebar"
           onClick={toggleSidebar}
           className="focus:outline-none p-2 rounded-full bg-black/20 text-white hover:scale-105 hover:shadow-lg transition"
         >

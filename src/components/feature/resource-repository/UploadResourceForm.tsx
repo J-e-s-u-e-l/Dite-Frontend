@@ -10,8 +10,8 @@ const UploadResourceForm: React.FC<UploadResourceFormProps> = ({
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState("");
 
-  const handleFileChange = (event) => {
-    const selectedFile = event.target.files[0];
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = event.target.files ? event.target.files[0] : null;
     const maxSize = 5 * 1024 * 1024; // 5MB in bytes
 
     if (selectedFile) {
@@ -46,6 +46,7 @@ const UploadResourceForm: React.FC<UploadResourceFormProps> = ({
 
       <input
         type="file"
+        title="Choose a file to upload"
         onChange={handleFileChange}
         className="block w-full text-sm text-gray-900 border border-gray-300 rounded-md cursor-pointer 
                    file:bg-green-500 file:text-white file:border-none file:px-4 file:py-2 file:rounded-md 

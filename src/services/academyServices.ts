@@ -8,9 +8,12 @@ export const fetchTracks = async (academyId: string) => {
     if (!response.data.status) {
       throw new Error(response.data.message);
     }
-    // return response.data;
     return response.data;
   } catch (error) {
-    throw new Error(error.response?.data?.message || "Failed to fetch tracks");
+    if (error instanceof Error) {
+      throw new Error(`Failed to fetch tracks: ${error.message}`);
+    } else {
+      throw new Error("Failed to fetch tracks: Unknown error");
+    }
   }
 };

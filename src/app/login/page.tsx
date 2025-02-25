@@ -70,7 +70,12 @@ export default function Login() {
       if (data.status) {
         const isProduction = process.env.NODE_ENV === "production";
 
-        const cookieOptions = {
+        const cookieOptions: {
+          path: string;
+          sameSite: string;
+          httpOnly?: boolean;
+          secure?: boolean;
+        } = {
           path: "/",
           sameSite: "Strict",
         };

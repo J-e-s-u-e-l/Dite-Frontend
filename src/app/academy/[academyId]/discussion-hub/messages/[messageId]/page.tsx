@@ -71,8 +71,15 @@ const MessageDetailsPage: React.FC = () => {
         .connectMessageHub(messageId as string);
 
       if (connection) {
-        subscribeToMessageReplies((newReply) => {
-          setAllMessageResponses((prev) => [newReply, ...prev]);
+        subscribeToMessageReplies((messageReply) => {
+          const newReply: MessageResponse = {
+            responseBody: messageReply.ResponseBody,
+            responderUsername: messageReply.ResponderUsername,
+            responderRoleInAcademy: messageReply.ResponderRoleInAcademy,
+            sentAtAgo: messageReply.SentAtAgo,
+            sentAt: messageReply.SentAt,
+          };
+          setAllMessageResponses((prev) => [newReply, ...(prev ?? [])]);
         });
       }
     })();

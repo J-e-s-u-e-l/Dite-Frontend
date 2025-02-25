@@ -1,14 +1,22 @@
 import React from "react";
 
-const NotificationSearchFilter = ({ setFilters }) => {
-  const handleSearchChange = (event) => {
+interface NotificationSearchFilterProps {
+  setFilters: React.Dispatch<
+    React.SetStateAction<{ search?: string; unread?: boolean }>
+  >;
+}
+
+const NotificationSearchFilter: React.FC<NotificationSearchFilterProps> = ({
+  setFilters,
+}) => {
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setFilters((prev) => ({
       ...prev,
       search: event.target.value,
     }));
   };
 
-  const handleUnreadChange = (event) => {
+  const handleUnreadChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setFilters((prev) => ({
       ...prev,
       unread: event.target.checked,

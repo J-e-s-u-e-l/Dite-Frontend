@@ -13,7 +13,8 @@ export const fetchAllTasks = async () => {
 
     return response.data;
   } catch (error) {
-    throw new Error(error.response?.data?.message || "failed to get all tasks");
+    const err = error as { response?: { data?: { message?: string } } };
+    throw new Error(err.response?.data?.message || "failed to get all tasks");
   }
 };
 
@@ -28,11 +29,8 @@ export const fetchTaskStatuses = async () => {
     }
 
     return response.data;
-  } catch (error) {
-    throw new Error(
-      error.response?.data?.message ||
-        "failed to get all possible task statuses"
-    );
+  } catch {
+    throw new Error("failed to get all possible task statuses");
   }
 };
 
@@ -48,8 +46,8 @@ export const addNewTask = async (newTask: Task) => {
     }
 
     return response.data;
-  } catch (error) {
-    throw new Error(error.response?.data?.message || "failed to add new task");
+  } catch {
+    throw new Error("failed to add new task");
   }
 };
 
@@ -70,8 +68,8 @@ export const updateTask = async (
     }
 
     return response.data;
-  } catch (error) {
-    throw new Error(error.response?.data?.message || "failed to update task");
+  } catch {
+    throw new Error("failed to update task");
   }
 };
 
@@ -92,10 +90,8 @@ export const updateTaskStatus = async (
     }
 
     return response.data;
-  } catch (error) {
-    throw new Error(
-      error.response?.data?.message || "failed to update task status"
-    );
+  } catch {
+    throw new Error("failed to update task status");
   }
 };
 
@@ -110,8 +106,8 @@ export const deleteTask = async (taskId: string) => {
     }
 
     return response.data;
-  } catch (error) {
-    throw new Error(error.response?.data?.message || "failed to delete task");
+  } catch {
+    throw new Error("failed to delete task");
   }
 };
 
@@ -126,10 +122,7 @@ export const fetchCompletionRate = async (selectedFilter: string) => {
     }
 
     return response.data;
-  } catch (error) {
-    throw new Error(
-      error.response?.data?.message ||
-        "failed to fetch completion rate for selected filter"
-    );
+  } catch {
+    throw new Error("failed to fetch completion rate for selected filter");
   }
 };

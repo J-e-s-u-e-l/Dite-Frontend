@@ -114,9 +114,9 @@ export const useSignalRStore = create<SignalRStore>((set, get) => ({
 }));
 
 // ✅ Unified Subscription Logic
-const subscribeToEvent = (
+const subscribeToEvent = <T>(
   eventName: string,
-  callback: (data: unknown) => void
+  callback: (data: T) => void
 ) => {
   const connection = useSignalRStore.getState().messageHubConnection;
   if (!connection) {
@@ -141,16 +141,29 @@ const subscribeToEvent = (
 export const subscribeToDiscussionHubMessages = (
   callback: (message: { id: string; content: string; sender: string }) => void
 ) => {
-  subscribeToEvent("ReceiveMessage", callback);
+  subscribeToEvent<{ id: string; content: string; sender: string }>(
+    "ReceiveMessage",
+    callback
+  );
 };
 
 // ✅ Subscribes to new replies
 export const subscribeToMessageReplies = (
   callback: (messageReply: {
-    id: string;
-    content: string;
-    sender: string;
+    ResponseId: string;
+    ResponseBody: string;
+    ResponderUsername: string;
+    ResponderRoleInAcademy: string;
+    SentAtAgo: string;
+    SentAt: string;
   }) => void
 ) => {
-  subscribeToEvent("ReceiveReply", callback);
+  subscribeToEvent<{
+    ResponseId: string;
+    ResponseBody: string;
+    ResponderUsername: string;
+    ResponderRoleInAcademy: string;
+    SentAtAgo: string;
+    SentAt: string;
+  }>("ReceiveReply", callback);
 };

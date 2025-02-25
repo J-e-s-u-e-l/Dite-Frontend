@@ -45,7 +45,7 @@ const TaskCard: React.FC<TaskProps> = ({
     try {
       // const updatedTask = { ...task, taskStatus: newStatus };
       // await updateTaskStatus(updatedTask);
-      await updateTaskStatus(task.taskId, { taskStatus: newStatus });
+      await updateTaskStatus(task.taskId ?? "", { taskStatus: newStatus });
       // onTaskUpdated(updatedTask);
       onTaskUpdated({ ...task, taskStatus: newStatus });
     } catch (error) {
@@ -56,9 +56,11 @@ const TaskCard: React.FC<TaskProps> = ({
   const handleDeleteTask = async () => {
     setIsDeleting(true);
     try {
-      const response = await deleteTask(task.taskId);
+      const response = await deleteTask(task.taskId ?? "");
       if (response.status) {
-        onTaskDeleted(task.taskId);
+        if (task.taskId) {
+          onTaskDeleted(task.taskId);
+        }
         showToast("Task deleted successfully", "success");
       } else {
         showToast("Failed to delete task", "error");
@@ -112,7 +114,11 @@ const TaskCard: React.FC<TaskProps> = ({
           {isDeleting ? "Deleting" : "Delete"}
         </button>
 
+        <label htmlFor={`status-select-${task.taskId}`} className="sr-only">
+          Status
+        </label>
         <select
+          id={`status-select-${task.taskId}`}
           value={task.taskStatus}
           onChange={(e) => handleStatusChange(e.target.value)}
           className="border rounded-md px-2 py-1 text-sm mt-1"

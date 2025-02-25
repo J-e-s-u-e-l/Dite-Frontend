@@ -85,7 +85,11 @@ const PostMessageModal: React.FC<PostMessageModalProps> = ({
       // onMessagePosted(newMessage);
       onClose();
     } catch (err) {
-      setError(err.message);
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("An unknown error occurred");
+      }
     } finally {
       setLoading(false);
     }
