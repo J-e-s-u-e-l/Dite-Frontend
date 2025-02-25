@@ -2,7 +2,7 @@ import apiClient from "@/utils/apiClient";
 
 export const uploadResource = async (
   file: File,
-  newResource: any,
+  newResource: { resourceName: string; resourceType: string },
   academyId: string | string[] | undefined
 ) => {
   try {

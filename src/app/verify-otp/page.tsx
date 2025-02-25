@@ -42,7 +42,7 @@ const VerifyOtpPage = () => {
   };
 
   const payload = {
-    Code: otp,
+    Code: otp.join(""),
     Purpose: payloadPurpose,
   };
 

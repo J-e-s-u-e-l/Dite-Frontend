@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import apiClient from "@/utils/apiClient";
 import Loader from "@/components/common/Loader";
-import { useToast } from "@/context/ToastContext";
+// import { useToast } from "@/context/ToastContext";
 
 const AcademyHomePage = () => {
   const router = useRouter();
@@ -12,7 +12,7 @@ const AcademyHomePage = () => {
   const [academyName, setAcademyName] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const { showToast: showToast } = useToast();
+  // const { showToast: showToast } = useToast();
 
   const handleRedirectToResourceRepository = () => {
     router.push(`/academy/${academyId}/resources-repo`);

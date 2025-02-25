@@ -14,7 +14,6 @@ const VerificationComponent: React.FC<VerificationComponentProps> = ({
   const router = useRouter();
 
   const { showToast: showToast } = useToast();
-  const { hideToast: hideToast } = useToast();
 
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");

@@ -2,17 +2,19 @@
 
 import { useEffect, useState } from "react";
 import NotificationList from "@/components/feature/notifications/NotificationList";
-import NotificationSearchFilter from "@/components/feature/notifications/NotificationSearchFilter";
 import { fetchAllNotifications } from "@/services/notificationServices";
-import {
-  startSignalRConnectionForNotifications,
-  subscribeToNotifications,
-  cleanupNotificationSubscription,
-} from "@/services/signalRServices";
 
 const NotificationPage = () => {
-  const [notifications, setNotifications] = useState<any[]>([]);
-  const [newNotifications, setNewNotifications] = useState<any>();
+  interface Notification {
+    notificationId: string;
+    notificationTitle: string;
+    notificationBody: string;
+    isRead: boolean;
+    timeStamp: string;
+  }
+
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  // const [newNotifications, setNewNotifications] = useState<any>();
   const [loading, setLoading] = useState(true);
   const [pageError, setPageError] = useState("");
   // const [filters, setFilters] = useState({ unread: false, search: "" });

@@ -7,10 +7,7 @@ import { useToast } from "@/context/ToastContext";
 import Loader from "@/components/common/Loader";
 import PostMessageModal from "@/components/feature/academy/PostMessageModal";
 import MessageCard from "@/components/feature/academy/MessageCard";
-import {
-  fetchMessages,
-  MessagesResponse,
-} from "@/services/discussionHubServices";
+import { fetchMessages } from "@/services/discussionHubServices";
 import {
   //   startSignalRConnectionForMessages,
   // subscribeToDiscussionHubMessages,
@@ -18,10 +15,11 @@ import {
   useSignalRStore,
   //   cleanupDiscussionHubSubscription,
 } from "@/services/signalRServices";
+import { Message, MessagesResponse } from "@/types/interfaces";
 
 const DiscussionHubPage: React.FC = () => {
   // const [messages, setMessages] = React.useState<any[]>([]);
-  const [messages, setMessages] = useState<any[] | null>([]);
+  const [messages, setMessages] = useState<Message[] | null>([]);
   const [isModalOpen, setModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [pageError, setPageError] = useState("");

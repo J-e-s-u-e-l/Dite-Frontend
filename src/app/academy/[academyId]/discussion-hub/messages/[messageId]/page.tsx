@@ -12,6 +12,7 @@ import {
   useSignalRStore,
   subscribeToMessageReplies,
 } from "@/services/signalRServices";
+import { MessageResponse, MessageDetails } from "@/types/interfaces";
 
 // interface Response {
 //   responseBody: string;
@@ -21,33 +22,23 @@ import {
 //   sentAt: string;
 // }
 
-interface MessageDetails {
-  messageTitle: string;
-  messageBody: string;
-  senderUserName: string;
-  senderRoleInAcademy: string;
-  trackName?: string;
-  sentAtAgo: string;
-  totalNumberOfResponses: number;
-}
-
 const MessageDetailsPage: React.FC = () => {
   const { messageId } = useParams();
 
   const [messageDetails, setMessageDetails] = useState<MessageDetails | null>(
     null
   );
-  const [allMessageResponses, setAllMessageResponses] = useState<any[] | null>(
-    []
-  );
+  const [allMessageResponses, setAllMessageResponses] = useState<
+    MessageResponse[] | null
+  >([]);
 
   const [newResponse, setNewResponse] = useState("");
   const [loading, setLoading] = useState(true);
   const [pageError, setPageError] = useState("");
   const { showToast } = useToast();
 
-  const { connectMessageReplyHub, disconnectMessageReplyHub } =
-    useSignalRStore();
+  // const { connectMessageReplyHub, disconnectMessageReplyHub } =
+  //   useSignalRStore();
 
   useEffect(() => {
     if (messageId) {

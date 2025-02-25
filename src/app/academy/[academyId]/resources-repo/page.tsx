@@ -39,6 +39,7 @@ const ResourceRepositoryPage: React.FC = () => {
       setPageError(
         "Unable to load resources due to a server issue. Please try again later or contact support if the problem persists."
       );
+      console.error("Error fetching resources", error);
     } finally {
       setLoading(false);
     }

@@ -9,7 +9,7 @@ interface PostMessageModalProps {
   isOpen: boolean;
   onClose: () => void;
   // onMessagePosted: (newMessage: any) => void;
-  academyId: any;
+  academyId: string;
 }
 
 const PostMessageModal: React.FC<PostMessageModalProps> = ({
@@ -59,7 +59,12 @@ const PostMessageModal: React.FC<PostMessageModalProps> = ({
     setError("");
 
     try {
-      const payload: any = {
+      const payload: {
+        messageTitle: string;
+        messageBody: string;
+        academyId: string;
+        trackId?: string;
+      } = {
         messageTitle,
         messageBody,
         academyId,
@@ -79,7 +84,7 @@ const PostMessageModal: React.FC<PostMessageModalProps> = ({
 
       // onMessagePosted(newMessage);
       onClose();
-    } catch (err: any) {
+    } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);

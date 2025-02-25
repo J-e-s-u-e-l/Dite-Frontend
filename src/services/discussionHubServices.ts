@@ -1,7 +1,11 @@
 import apiClient from "@/utils/apiClient";
+import { MessagesResponse, MessageDetailsResponse } from "@/types/interfaces";
 
 // export const fetchMessages = async (academyId, pageNumber): Promise<any[]> => {
-export const fetchMessages = async (academyId, pageNumber): Promise<any[]> => {
+export const fetchMessages = async (
+  academyId: string | string[] | undefined,
+  pageNumber: number
+): Promise<MessagesResponse> => {
   try {
     const pageSize = 10;
 
@@ -33,7 +37,7 @@ export const postMessage = async (messageData: {
   messageBody: string;
   academyId: string;
   trackId?: string;
-}): Promise<any> => {
+}): Promise<MessagesResponse> => {
   try {
     const response = await apiClient.post(
       `${process.env.NEXT_PUBLIC_API_URL}/messages/create`,
@@ -50,7 +54,11 @@ export const postMessage = async (messageData: {
   }
 };
 
-export const fetchMessageDetails = async (messageId: string): Promise<any> => {
+// import { MessageDetailsResponse } from "@/types/interfaces";
+
+export const fetchMessageDetails = async (
+  messageId: string
+): Promise<MessageDetailsResponse> => {
   try {
     const response = await apiClient.get(
       `${process.env.NEXT_PUBLIC_API_URL}/messages/${messageId}`
@@ -70,7 +78,7 @@ export const fetchMessageDetails = async (messageId: string): Promise<any> => {
 export const postResponseToMessage = async (
   parentId: string,
   responseMessage: string
-): Promise<any> => {
+): Promise<MessagesResponse> => {
   try {
     const payload = {
       parentId,

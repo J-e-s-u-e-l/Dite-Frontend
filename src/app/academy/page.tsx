@@ -355,7 +355,7 @@ const Academy = () => {
                         Academy Info
                       </button>
                       <button
-                        className="block px-4 py-2 text-left text-red-500 hover:bg-gray-100 w-full"
+                        className="block px-4 py-2 text-left text-red-500 hover:bg-red-500 hover:text-white w-full"
                         onClick={(event) => {
                           event.stopPropagation();
                           setConfirmLeave(academy.academyId);

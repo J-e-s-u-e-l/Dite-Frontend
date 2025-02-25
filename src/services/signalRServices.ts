@@ -4,9 +4,13 @@ import { create } from "zustand";
 interface SignalRStore {
   messageHubConnection: SignalR.HubConnection | null;
   notificationHubConnection: SignalR.HubConnection | null;
-  connectMessageHub: (academyId: string) => Promise<any | null>;
+  connectMessageHub: (
+    academyId: string
+  ) => Promise<SignalR.HubConnection | null>;
   disconnectMessageHub: (academyId: string) => Promise<void>;
-  connectMessageReplyHub: (messageId: string) => Promise<any | null>;
+  connectMessageReplyHub: (
+    messageId: string
+  ) => Promise<SignalR.HubConnection | null>;
   disconnectMessageReplyHub: (messageId: string) => Promise<void>;
 }
 
@@ -110,7 +114,10 @@ export const useSignalRStore = create<SignalRStore>((set, get) => ({
 }));
 
 // ✅ Unified Subscription Logic
-const subscribeToEvent = (eventName: string, callback: (data: any) => void) => {
+const subscribeToEvent = (
+  eventName: string,
+  callback: (data: unknown) => void
+) => {
   const connection = useSignalRStore.getState().messageHubConnection;
   if (!connection) {
     console.error(
@@ -132,14 +139,18 @@ const subscribeToEvent = (eventName: string, callback: (data: any) => void) => {
 
 // ✅ Subscribes to new messages
 export const subscribeToDiscussionHubMessages = (
-  callback: (message: any) => void
+  callback: (message: { id: string; content: string; sender: string }) => void
 ) => {
   subscribeToEvent("ReceiveMessage", callback);
 };
 
 // ✅ Subscribes to new replies
 export const subscribeToMessageReplies = (
-  callback: (messageReply: any) => void
+  callback: (messageReply: {
+    id: string;
+    content: string;
+    sender: string;
+  }) => void
 ) => {
   subscribeToEvent("ReceiveReply", callback);
 };

@@ -109,7 +109,7 @@ const AcademyInfoPage = () => {
     }
   }, [academyId]);
 
-  const toggleSelectedMember = (member) => {
+  const toggleSelectedMember = (member: Member) => {
     if (selectedMember?.userId === member.userId) {
       setSelectedMember(null);
     } else {
@@ -189,7 +189,7 @@ const AcademyInfoPage = () => {
 
     setLoading(true);
     try {
-      const payload: any = {
+      const payload = {
         memberId: selectedMember.userId,
         academyId,
       };
@@ -226,7 +226,7 @@ const AcademyInfoPage = () => {
 
     setLoading(true);
     try {
-      const payload: any = {
+      const payload = {
         memberId: selectedMember.userId,
         newRole,
         academyId,

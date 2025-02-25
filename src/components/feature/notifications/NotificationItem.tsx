@@ -1,17 +1,27 @@
 import { useState } from "react";
 import { markNotificationAsRead } from "@/services/notificationServices";
-import { deleteNotification } from "@/services/notificationServices";
+// import { deleteNotification } from "@/services/notificationServices";
 import { useToast } from "@/context/ToastContext";
 
-export const NotificationItem = ({ notification }) => {
+interface Notification {
+  notificationId: string;
+  notificationTitle: string;
+  notificationBody: string;
+  timeStamp: string;
+  isRead: boolean;
+}
+
+export const NotificationItem = ({
+  notification,
+}: {
+  notification: Notification;
+}) => {
   const [read, setRead] = useState(notification.isRead);
   const { showToast } = useToast();
 
   const markSelectedNotificationAsRead = async () => {
     try {
-      const response = await markNotificationAsRead(
-        notification.notificationId
-      );
+      await markNotificationAsRead(notification.notificationId);
       setRead(true);
       showToast("Notification marked as read", "success");
     } catch (error) {
@@ -23,15 +33,15 @@ export const NotificationItem = ({ notification }) => {
     }
   };
 
-  const deleteSelectedNotification = async () => {
-    try {
-      await deleteNotification(notification.notificationId);
-      showToast("Notification deleted successfully", "success");
-    } catch (error) {
-      showToast("Failed to delete notification. Please try again", "error");
-      console.error("Error deleting notification", error);
-    }
-  };
+  // const deleteSelectedNotification = async () => {
+  //   try {
+  //     await deleteNotification(notification.notificationId);
+  //     showToast("Notification deleted successfully", "success");
+  //   } catch (error) {
+  //     showToast("Failed to delete notification. Please try again", "error");
+  //     console.error("Error deleting notification", error);
+  //   }
+  // };
 
   return (
     <div
