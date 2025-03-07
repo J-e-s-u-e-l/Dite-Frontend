@@ -114,7 +114,8 @@ function ActualLoginPage() {
         localStorage.setItem("userName", data.data.username);
 
         // Redirect the user
-        router.push(redirectTo ?? "/");
+        // router.push(redirectTo ?? "/");
+        router.replace(redirectTo ?? "/");
       } else if (
         data.message ===
         "Your email has not been verified. Please proceed to verify your email."
