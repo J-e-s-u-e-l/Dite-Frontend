@@ -75,47 +75,21 @@ function ActualLoginPage() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ email, password }),
+          credentials: "include",
         }
       );
 
       const data = await response.json();
 
       if (data.status) {
-        const isProduction = process.env.NODE_ENV === "production";
-
-        const cookieOptions: {
-          path: string;
-          sameSite: string;
-          httpOnly?: boolean;
-          secure?: boolean;
-        } = {
-          path: "/",
-          sameSite: "Strict",
-        };
-
-        // Apply Secure and HttpOnly flags only in production
-        if (isProduction) {
-          cookieOptions.httpOnly = true;
-          cookieOptions.secure = true;
-        } else {
-          cookieOptions.httpOnly = false;
-          cookieOptions.secure = false;
-        }
-
-        document.cookie = `authToken=${data.data.token}; path=${
-          cookieOptions.path
-        }; SameSite=${cookieOptions.sameSite}; ${
-          cookieOptions.secure ? "Secure;" : ""
-        }${cookieOptions.httpOnly ? "HttpOnly;" : ""}`;
-
         // Call login from context
         login(data.data.token);
         localStorage.setItem("userEmail", data.data.email);
         localStorage.setItem("userName", data.data.username);
 
         // Redirect the user
-        // router.push(redirectTo ?? "/");
-        router.replace(redirectTo ?? "/");
+        router.push(redirectTo ?? "/");
+        // router.replace(redirectTo ?? "/");
       } else if (
         data.message ===
         "Your email has not been verified. Please proceed to verify your email."

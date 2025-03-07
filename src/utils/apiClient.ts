@@ -11,28 +11,27 @@ const apiClient = axios.create({
   withCredentials: true,
 });
 
-apiClient.interceptors.request.use(
-  (config) => {
-    // const token = Cookies.get("authToken");
-    const token = getCookie("authToken");
-    if (token) {
-      config.headers["Authorization"] = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
+// apiClient.interceptors.request.use(
+//   (config) => {
+//     // const token = getCookie("authToken");
+//     if (token) {
+//       config.headers["Authorization"] = `Bearer ${token}`;
+//     }
+//     return config;
+//   },
+//   (error) => {
+//     return Promise.reject(error);
+//   }
+// );
 
-export const getCookie = (name: string) => {
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) {
-    const part = parts.pop();
-    if (part) return part.split(";").shift();
-  }
-  return null;
-};
+// export const getCookie = (name: string) => {
+//   const value = `; ${document.cookie}`;
+//   const parts = value.split(`; ${name}=`);
+//   if (parts.length === 2) {
+//     const part = parts.pop();
+//     if (part) return part.split(";").shift();
+//   }
+//   return null;
+// };
 
 export default apiClient;
