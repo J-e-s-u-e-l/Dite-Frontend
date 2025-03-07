@@ -34,7 +34,7 @@ export interface MessageDetailsResponse {
   status: boolean;
   message: string;
   data: {
-    message: MessageDetails;
+    message: MessageDetails[];
     responses: MessageResponse[];
   };
 }

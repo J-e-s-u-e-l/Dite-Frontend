@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { useToast } from "@/context/ToastContext";
 
-const VerifyOtpPage = () => {
+const ActualVerifyOtpPage = () => {
   // const [otp, setOtp] = useState("");
   const [error, setError] = useState("");
   const [isResendDisabled, setIsResendDisabled] = useState(false);
@@ -178,7 +178,7 @@ const VerifyOtpPage = () => {
               onChange={(e) => handleOtpChange(e, index)}
               onKeyDown={(e) => handleKeyDown(e, index)}
               onPaste={handlePaste}
-              placeholder="0"
+              placeholder=""
               className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 text-center text-lg border border-gray-300 rounded-lg 
                 focus:outline-none focus:ring-2 focus:ring-[#16a34a] transition-all"
             />
@@ -217,4 +217,10 @@ const VerifyOtpPage = () => {
   );
 };
 
-export default VerifyOtpPage;
+export default function VerifyOtpPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ActualVerifyOtpPage />
+    </Suspense>
+  );
+}

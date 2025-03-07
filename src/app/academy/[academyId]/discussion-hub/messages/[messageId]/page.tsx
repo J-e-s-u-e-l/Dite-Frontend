@@ -51,7 +51,7 @@ const MessageDetailsPage: React.FC = () => {
       setLoading(true);
       const response = await fetchMessageDetails(messageId);
       // setMessageDetails(response.data.message[0]);
-      setMessageDetails(response.data.message);
+      setMessageDetails(response.data.message[0]);
       setAllMessageResponses(response.data.responses);
     } catch (error) {
       console.error(error);

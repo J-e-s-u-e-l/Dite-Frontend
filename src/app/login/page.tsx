@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useAuth } from "../../context/authContext";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -9,14 +9,27 @@ import { useToast } from "@/context/ToastContext";
 // import Toast from "../../components/common/Toast";
 import Loader from "@/components/common/Loader";
 
-export default function Login() {
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ActualLoginPage />
+    </Suspense>
+  );
+}
+
+function ActualLoginPage() {
   const { showToast: showToast } = useToast();
   const { hideToast: hideToast } = useToast();
 
   const { login } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get("redirect") || "/";
+  // const redirectTo = searchParams.get("redirect") || "/";
+  const [redirectTo, setRedirectTo] = useState("/");
+
+  useEffect(() => {
+    setRedirectTo(searchParams.get("redirect") || "/");
+  }, [searchParams]);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -118,67 +131,7 @@ export default function Login() {
     }
   };
 
-  // return (
-  //   <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center">
-  //     {loading && <Loader />}
-  //     <h1 className="text-4xl font-bold text-blue-600">Login Page</h1>
-  //     <form
-  //       onSubmit={handleLogin}
-  //       className="bg-white p-8 rounded shadow-lg w-full max-w-sm mt-4"
-  //     >
-  //       <div className="mb-4">
-  //         <label className="block text-gray-700" htmlFor="email">
-  //           Email
-  //         </label>
-  //         <input
-  //           id="email"
-  //           type="email"
-  //           value={email}
-  //           onChange={(e) => setEmail(e.target.value)}
-  //           className="w-full p-2 border border-gray-300 rounded text-black"
-  //           required
-  //         />
-  //       </div>
-
-  //       <div className="mb-4">
-  //         <label className="block text-gray-700" htmlFor="password">
-  //           Password
-  //         </label>
-  //         <input
-  //           id="password"
-  //           type="password"
-  //           value={password}
-  //           onChange={(e) => setPassword(e.target.value)}
-  //           className="w-full p-2 border border-gray-300 rounded text-black"
-  //           required
-  //         />
-  //       </div>
-
-  //       <div className="flex justify-between flex-wrap gap-4">
-  //         <Link href="/register" className="text-blue-300">
-  //           Create account
-  //         </Link>
-
-  //         <Link href="/reset-password" className="text-red-300">
-  //           Forgot password
-  //         </Link>
-  //       </div>
-
-  //       {error && <p className="text-red-500 text-sm">{error}</p>}
-
-  //       <button
-  //         type="submit"
-  //         disabled={loading}
-  //         className={`w-full mt-4 py-2 px-4 text-white rounded ${
-  //           loading ? "bg-gray-400" : "bg-blue-500 hover:bg-blue-600"
-  //         }`}
-  //       >
-  //         {loading ? "Logging in..." : "Login"}
-  //       </button>
-  //     </form>
-  //   </div>
-  // );
-
+  // <Suspense fallback={<div>Loading...</div>}></Suspense>;
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center">
       {loading && <Loader />}
