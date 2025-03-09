@@ -29,5 +29,7 @@ export default async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"], // Protect all pages except login and public assets
+  matcher: [
+    "/((?!api|_next/static|_next/image|favicon.ico|login|register|verify-otp|emailVerification|passwordReset).*)",
+  ],
 };
