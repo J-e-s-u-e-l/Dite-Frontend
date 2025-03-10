@@ -4,6 +4,9 @@ export const validateEmail = (email: string) =>
 export const validateUsername = async (username: string) => {
   if (username.length < 3) return "Username must be at least 3 characters.";
   if (username.length > 20) return "Username must not exceed 20 characters.";
+  if (!/^[a-zA-Z0-9_]*$/.test(username))
+    return "Only letters, numbers, and underscores are allowed.";
+
   try {
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/Registration/uniqueUsername`,

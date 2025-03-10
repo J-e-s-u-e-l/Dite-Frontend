@@ -66,41 +66,21 @@ const MessageDetailsPage: React.FC = () => {
     if (!messageId) return;
 
     (async () => {
-      const connection = await useSignalRStore
-        .getState()
-        .connectMessageHub(messageId as string);
+      await useSignalRStore.getState().connectMessageHub(); // Ensure connection is active
+      await useSignalRStore.getState().joinGroup(messageId as string);
 
-      if (connection) {
-        subscribeToMessageReplies((messageReply) => {
-          const newReply: MessageResponse = {
-            responseBody: messageReply.ResponseBody,
-            responderUsername: messageReply.ResponderUsername,
-            responderRoleInAcademy: messageReply.ResponderRoleInAcademy,
-            sentAtAgo: messageReply.SentAtAgo,
-            sentAt: messageReply.SentAt,
-          };
-          setAllMessageResponses((prev) => [newReply, ...(prev ?? [])]);
-        });
-      }
+      subscribeToMessageReplies((newResponse) => {
+        setAllMessageResponses((prev) => [
+          newResponse as unknown as MessageResponse,
+          ...(prev || []),
+        ]);
+      });
     })();
 
     return () => {
-      useSignalRStore.getState().disconnectMessageHub(messageId as string);
+      useSignalRStore.getState().leaveGroup(messageId as string);
     };
   }, [messageId]);
-
-  // useEffect(() => {
-  //   if (!messageId) return;
-
-  //   connectMessageReplyHub(messageId as string);
-  //   subscribeToMessageReplies((newResponse) => {
-  //     setAllMessageResponses((prev) => [newResponse, ...(prev ?? [])]);
-  //   });
-
-  //   return () => {
-  //     disconnectMessageReplyHub(messageId as string);
-  //   };
-  // }, [messageId]);
 
   const handleResponseSubmit = async () => {
     if (!newResponse.trim()) return;

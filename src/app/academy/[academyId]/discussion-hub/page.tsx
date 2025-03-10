@@ -54,75 +54,26 @@ const DiscussionHubPage: React.FC = () => {
     }
   };
 
-  // useEffect(() => {
-  //   if (!academyId) return;
-
-  //   connectMessageHub(academyId as string);
-  //   subscribeToDiscussionHubMessages((newMessage) => {
-  //     setMessages((prev) => [newMessage, ...prev]);
-  //   });
-
-  //   return () => {
-  //     disconnectMessageHub(academyId as string);
-  //   };
-  // }, [academyId]);
-
   useEffect(() => {
     if (!academyId) return;
 
     (async () => {
-      const connection = await useSignalRStore
-        .getState()
-        .connectMessageHub(academyId as string);
+      await useSignalRStore.getState().connectMessageHub(); // Connect if not already connected
 
-      if (connection) {
-        subscribeToDiscussionHubMessages((newMessage) => {
-          setMessages((prev) => [
-            newMessage as unknown as Message,
-            ...(prev || []),
-          ]);
-        });
-      }
+      await useSignalRStore.getState().joinGroup(academyId as string); // Join the academy group
+
+      subscribeToDiscussionHubMessages((newMessage) => {
+        setMessages((prev) => [
+          newMessage as unknown as Message,
+          ...(prev || []),
+        ]);
+      });
     })();
 
     return () => {
-      useSignalRStore.getState().disconnectMessageHub(academyId as string);
+      useSignalRStore.getState().leaveGroup(academyId as string);
     };
   }, [academyId]);
-
-  // useEffect(() => {
-  //   if (!academyId) return;
-
-  //   let isMounted = true; // To avoid memory leaks
-
-  //   (async () => {
-  //     const connection = await connectMessageHub(academyId as string);
-
-  //     if (connection && isMounted) {
-  //       subscribeToDiscussionHubMessages((newMessage) => {
-  //         setMessages((prev) => [newMessage, ...prev]);
-  //       });
-  //     }
-  //   })();
-
-  //   return () => {
-  //     isMounted = false;
-  //     disconnectMessageHub(academyId as string);
-  //   };
-  // }, [academyId]);
-
-  // useEffect(() => {
-  //   if (!academyId) return;
-
-  //   startSignalRConnectionForMessages(academyId);
-  //   subscribeToDiscussionHubMessages((newMessage) => {
-  //     setMessages((prev) => [newMessage, ...prev]);
-  //   });
-
-  //   return () => {
-  //     cleanupDiscussionHubSubscription(academyId);
-  //   };
-  // }, [academyId, router.asPath]);
 
   const handleReload = () => {
     setPageError("");

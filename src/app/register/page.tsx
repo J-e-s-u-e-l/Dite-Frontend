@@ -159,14 +159,6 @@ const Register = () => {
         confirmPassword: confirmPasswordError || "",
       }));
     }
-
-    if (name === "username" && !/^[a-zA-Z0-9_]*$/.test(value)) {
-      setMessages({
-        ...message,
-        username: "Only letters, numbers, and underscores are allowed.",
-      });
-      return; // Prevent invalid characters from updating state
-    }
   };
 
   // Validating confirm password against password
