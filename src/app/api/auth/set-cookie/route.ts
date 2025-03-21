@@ -10,8 +10,9 @@ export async function POST(request: NextRequest) {
       name: "authToken",
       value: token,
       httpOnly: true,
-      sameSite: "strict",
-      secure: process.env.NODE_ENV === "production",
+      sameSite: "none",
+      //   secure: process.env.NODE_ENV === "production",
+      secure: true,
       path: "/",
       maxAge: 30 * 60,
     });

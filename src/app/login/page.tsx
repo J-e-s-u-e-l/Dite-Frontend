@@ -82,7 +82,6 @@ function ActualLoginPage() {
       const data = await response.json();
 
       if (data.status) {
-        // Call login from context
         // login(data.data.token);
         await fetch("/api/auth/set-cookie", {
           method: "POST",
