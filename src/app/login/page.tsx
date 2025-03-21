@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
-import { useAuth } from "../../context/authContext";
+// import { useAuth } from "../../context/authContext";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
@@ -21,7 +21,7 @@ function ActualLoginPage() {
   const { showToast: showToast } = useToast();
   const { hideToast: hideToast } = useToast();
 
-  const { login } = useAuth();
+  // const { login } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   // const redirectTo = searchParams.get("redirect") || "/";
@@ -83,7 +83,16 @@ function ActualLoginPage() {
 
       if (data.status) {
         // Call login from context
-        login(data.data.token);
+        // login(data.data.token);
+        await fetch("/api/auth/set-cookie", {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ token: data.data.token }),
+        });
+
         localStorage.setItem("userEmail", data.data.email);
         localStorage.setItem("userName", data.data.username);
 

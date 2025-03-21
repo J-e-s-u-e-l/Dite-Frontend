@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export default async function middleware(req: NextRequest) {
-  const token = req.cookies.get("authToken");
+  const token = req.cookies.get("authToken")?.value;
+  console.log("Token: " + token);
   const isAuth = !!token;
 
   const { pathname, search } = req.nextUrl;
