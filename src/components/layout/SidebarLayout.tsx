@@ -20,6 +20,7 @@ const PageLayout = ({ children }: { children: React.ReactNode }) => {
   const currentPath = usePathname();
 
   const pagesWithoutSidebar = [
+    "/",
     "/login",
     "/register",
     "/verify-otp",

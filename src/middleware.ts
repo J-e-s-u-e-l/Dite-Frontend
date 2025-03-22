@@ -8,6 +8,7 @@ export default async function middleware(req: NextRequest) {
   const { pathname, search } = req.nextUrl;
 
   const publicPages = [
+    "/",
     "/login",
     "/register",
     "/verify-otp",

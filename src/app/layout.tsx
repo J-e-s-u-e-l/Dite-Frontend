@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Dite",
+  title: "Dite - Coursework Support System",
   description: "Coursework support system for students",
 };
 
