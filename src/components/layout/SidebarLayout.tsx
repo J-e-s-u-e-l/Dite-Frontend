@@ -97,10 +97,7 @@ const PageLayout = ({ children }: { children: React.ReactNode }) => {
           {/* <div className="flex flex-col justify-between items-center py-6 pr-4"> */}
           <div className="flex flex-col justify-between items-center py-6 pr-4 overflow-y-auto">
             {/* Logo */}
-            <Link
-              href="/"
-              className="text-2xl font-bold hover:text-[#F0F5F2] transition-colors"
-            >
+            <Link href="/" className="text-2xl font-bold">
               DITE
             </Link>
 
@@ -119,9 +116,9 @@ const PageLayout = ({ children }: { children: React.ReactNode }) => {
             {/* Navigation */}
             <nav className="mt-8 space-y-6">
               <button
-                onClick={() => handleNavClick("/")}
+                onClick={() => handleNavClick("/home")}
                 className={`w-full text-left py-3 px-4 rounded-md flex flex-row gap-x-2 ${
-                  activeNav === "/"
+                  activeNav === "/home"
                     ? "text-[#00BC35] bg-[#F0F5F2]"
                     : "hover:text-[#F0F5F2] hover:bg-[#00BC35]"
                 }`}

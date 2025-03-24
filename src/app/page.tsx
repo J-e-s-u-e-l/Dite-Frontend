@@ -322,7 +322,10 @@ export default function LandingPage() {
             href="\register"
             variants={buttonHover}
             whileHover="hover"
-            style={{ backgroundColor: lightGreen, color: primaryGreen }}
+            style={{
+              backgroundColor: lightGreen,
+              color: primaryGreen,
+            }}
             className="px-8 py-3 rounded-full font-semibold"
           >
             Get Started for Free
